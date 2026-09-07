@@ -1,0 +1,7 @@
+{
+  "name": "ProjectAI",
+  "version": "0.1.0",
+  "log_level": "INFO",
+  "model_dir": "models",
+  "data_dir": "data"
+}
