@@ -145,26 +145,17 @@ class Tensor:
             flat = flat * dimension + current
         return flat
 
-    def __getitem__(
-        self,
-        index: int | tuple[int, ...],
-    ) -> Number:
+    def __getitem__(self, index: int | tuple[int, ...]) -> Number:
         return self._data[self._flat_index(index)]
 
-    def __setitem__(
-        self,
-        index: int | tuple[int, ...],
-        value: Number,
-    ) -> None:
+    def __setitem__(self, index: int | tuple[int, ...], value: Number) -> None:
         if not isinstance(value, Real) or isinstance(value, bool):
             raise TypeError("Tensor values must be numeric.")
+        
         self._data[self._flat_index(index)] = value
         self._dtype = self._infer_dtype(self._data)
 
-    def reshape(
-        self,
-        *shape: int | Sequence[int],
-    ) -> Tensor:
+    def reshape(self, *shape: int | Sequence[int]) -> Tensor:
         if len(shape) == 1 and isinstance(shape[0], (list, tuple)):
             new_shape = tuple(shape[0])
         else:
@@ -207,16 +198,10 @@ class Tensor:
 
     def mean(self) -> float:
         if self.size == 0:
-            raise ValueError(
-                "Mean of an empty Tensor is undefined."
-            )
+            raise ValueError("Mean of an empty Tensor is undefined.")
         return self.sum() / self.size
 
-    def _binary_op(
-        self,
-        other: Number | Tensor,
-        operation: str,
-    ) -> Tensor:
+    def _binary_op(self, other: Number | Tensor, operation: str) -> Tensor:
         if isinstance(other, Tensor):
             if self.shape != other.shape:
                 raise ValueError(
@@ -227,15 +212,11 @@ class Tensor:
         elif isinstance(other, Real) and not isinstance(other, bool):
             right = [other] * self.size
         else:
-            raise TypeError(
-                "Operation requires a Tensor or numeric scalar."
-            )
+            raise TypeError("Operation requires a Tensor or numeric scalar.")
+       
         result: list[Number] = []
 
-        for left_value, right_value in zip(
-            self._data,
-            right,
-        ):
+        for left_value, right_value in zip(self._data, right):
             if operation == "add":
                 result.append(left_value + right_value)
             elif operation == "sub":
@@ -244,14 +225,10 @@ class Tensor:
                 result.append(left_value * right_value)
             elif operation == "div":
                 if right_value == 0:
-                    raise ZeroDivisionError(
-                        "Tensor division by zero."
-                    )
+                    raise ZeroDivisionError("Tensor division by zero.")
                 result.append(left_value / right_value)
             else:
-                raise ValueError(
-                    f"Unknown operation: {operation}"
-                )
+                raise ValueError(f"Unknown operation: {operation}")
         return Tensor(result, self.shape)
 
     def __add__(self, other: Number | Tensor) -> Tensor:
@@ -266,10 +243,7 @@ class Tensor:
     def __rsub__(self, other: Number | Tensor) -> Tensor:
         if isinstance(other, Tensor):
             return other.__sub__(self)
-        return Tensor(
-            [other] * self.size,
-            self.shape,
-        ).__sub__(self)
+        return Tensor([other] * self.size, self.shape).__sub__(self)
 
     def __mul__(self, other: Number | Tensor) -> Tensor:
         return self._binary_op(other, "mul")
@@ -282,14 +256,14 @@ class Tensor:
 
     def __matmul__(self, other: Tensor) -> Tensor:
         if not isinstance(other, Tensor):
-            raise TypeError(
-                "Matrix multiplication requires another Tensor."
-            )
+            raise TypeError("Matrix multiplication requires another Tensor.")
+        
         if self.ndim != 2 or other.ndim != 2:
             raise ValueError(
                 "Matrix multiplication currently requires "
                 "2-D tensors."
             )
+        
         rows_a, cols_a = self.shape
         rows_b, cols_b = other.shape
         if cols_a != rows_b:
