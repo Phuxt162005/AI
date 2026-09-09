@@ -3,7 +3,7 @@
 import unittest
 
 from evaluation.evaluate import evaluate_model
-from self_built.layers import Linear, ReLU
+from self_built.layers import Linear, ReLU, Sigmoid
 from self_built.losses import BinaryCrossEntropyLoss, MSELoss
 from self_built.model import Model
 from self_built.network import Sequential
@@ -30,9 +30,9 @@ class EvaluationTests(unittest.TestCase):
         model = self.create_model()
         inputs = Tensor([[1.0], [2.0]])
         targets = Tensor([[2.0], [4.0]])
-        before = [parameter.data for parameter in model.parameters()]
+        before = [parameter.tolist() for parameter in model.parameters()]
         evaluate_model(model, inputs, targets)
-        after = [parameter.data for parameter in model.parameters()]
+        after = [parameter.tolist() for parameter in model.parameters()]
         self.assertEqual(before, after)
 
     def test_training_improves_evaluation_loss(self):
@@ -51,7 +51,7 @@ class EvaluationTests(unittest.TestCase):
         self.assertGreaterEqual(result["loss"], 0.0)
 
     def test_binary_cross_entropy_evaluation(self):
-        network = Sequential(Linear(1, 1, seed=1))
+        network = Sequential(Linear(1, 1, seed=1), Sigmoid())
         model = Model(network, BinaryCrossEntropyLoss(), SGD(network.parameters(), learning_rate=0.01))
         inputs = Tensor([[0.0], [1.0]])
         targets = Tensor([[0.0], [1.0]])
