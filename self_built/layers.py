@@ -1,55 +1,56 @@
+"""Self-built neural network layers for ProjectAI."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from random import Random
-from typing import Any
 
 from .tensor import Tensor
 
+
 class Layer(ABC):
     """Base interface for neural network layers."""
-    
+
     def __init__(self) -> None:
         self.training = True
-        
+
     def train(self) -> None:
         self.training = True
-        
+
     def eval(self) -> None:
         self.training = False
-        
+
     @abstractmethod
     def forward(self, inputs: Tensor) -> Tensor:
         raise NotImplementedError
-    
+
     @abstractmethod
     def backward(self, grad_output: Tensor) -> Tensor:
         raise NotImplementedError
-    
+
     def parameters(self) -> list[Tensor]:
         return []
-    
+
     def gradients(self) -> list[Tensor]:
         return []
-    
+
+
 class Linear(Layer):
-    """Fully connected layer: y = xW + b"""
-    
+    """Fully connected layer: y = xW + b."""
+
     def __init__(self, in_features: int, out_features: int, seed: int | None = 42) -> None:
         super().__init__()
-        
         if in_features <= 0 or out_features <= 0:
             raise ValueError("Linear dimensions must be positive.")
         
         rng = Random(seed)
-        limit = (2.0/in_features)**0.5
-        
-        self.weight = Tensor([[rng.uniform(-limit, limit) for _ in range(out_features) for _ in range(in_features)]])
-        self.bias = Tensor([0.0] * out_features) 
-        self.grad_weight = Tensor([0.0] * out_features for _ in range(in_features))
+        limit = (2.0 / in_features) ** 0.5
+        self.weight = Tensor([[rng.uniform(-limit, limit) for _ in range(out_features)] for _ in range(in_features)])
+        self.bias = Tensor([0.0] * out_features)
+        self.grad_weight = Tensor([[0.0] * out_features for _ in range(in_features)])
         self.grad_bias = Tensor([0.0] * out_features)
         self._inputs: Tensor | None = None
-        
+
     def forward(self, inputs: Tensor) -> Tensor:
         if inputs.ndim == 1:
             if inputs.shape != (self.weight.shape[0],):
@@ -64,7 +65,7 @@ class Linear(Layer):
         
         self._inputs = inputs
         return _add_bias(inputs @ self.weight, self.bias)
-        
+
     def backward(self, grad_output: Tensor) -> Tensor:
         if self._inputs is None:
             raise RuntimeError("forward() must be called before backward().")
@@ -112,7 +113,8 @@ class Activation(Layer, ABC):
         if grad_output.shape != self._inputs.shape:
             raise ValueError("Gradient shape must match activation input shape.")
         return Tensor([gradient * self._derivative(float(value)) for value, gradient in zip(self._inputs._data, grad_output._data)], self._inputs.shape)
-    
+
+
 class ReLU(Activation):
     """Rectified Linear Unit activation."""
 
