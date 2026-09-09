@@ -1,4 +1,4 @@
-"""Training loop for ProjectAI."""
+"""Training loop."""
 
 from __future__ import annotations
 
