@@ -1,8 +1,10 @@
 """AI Core components for ProjectAI."""
 
+from .inference import InferencePipeline
 from .runtime import ModelRuntime, ModelState
 
 __all__ = [
+    "InferencePipeline",
     "ModelRuntime",
     "ModelState",
 ]
