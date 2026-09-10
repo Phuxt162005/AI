@@ -61,14 +61,15 @@ class ModelManager:
         self._validate_name(name)
         return name in self._models
 
-    def load(
-        self,
-        name: str,
-        source: str | None = None,
-    ) -> None:
+    def load(self, name: str, source: str | None = None) -> None:
         """Load a registered model through its runtime."""
         runtime = self.get(name)
         runtime.load(source)
+
+    def save(self, name: str, destination: str) -> None:
+        """Save a registered model through its runtime."""
+        runtime = self.get(name)
+        runtime.save(destination)
 
     def list_models(self) -> list[str]:
         """Return the names of all registered models."""

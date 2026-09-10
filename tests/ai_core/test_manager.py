@@ -228,35 +228,46 @@ def test_list_models_returns_registered_names() -> None:
 
 def test_metadata_delegates_to_runtime() -> None:
     manager = ModelManager()
-
-    manager.register(
-        "conversation",
-        create_runtime("ConversationModel"),
-    )
-
+    manager.register("conversation", create_runtime("ConversationModel"))
     metadata = manager.metadata("conversation")
-
-    assert metadata == {
-        "name": "ConversationModel",
-        "type": "test",
-    }
+    assert metadata == {"name": "ConversationModel", "type": "test"}
 
 
 def test_metadata_missing_model_raises_error() -> None:
     manager = ModelManager()
 
-    with pytest.raises(
-        KeyError,
-        match="not registered",
-    ):
+    with pytest.raises(KeyError, match="not registered"):
         manager.metadata("conversation")
+        
+def test_save_delegates_to_runtime() -> None:
+    class SaveModel(DummyModel):
+        def __init__(self) -> None:
+            super().__init__("SaveModel")
+            self.destination: str | None = None
+
+        def save(self, destination: str) -> None:
+            self.destination = destination
+
+    model = SaveModel()
+    runtime = ModelRuntime(model)
+    manager = ModelManager()
+    manager.register("save_model", runtime)
+    manager.save("save_model", "model.bin")
+
+    assert model.destination == "model.bin"
 
 
 def test_manager_does_not_directly_depend_on_concrete_model() -> None:
     manager = ModelManager()
     runtime = create_runtime("ConversationModel")
-
     manager.register("conversation", runtime)
 
     assert manager.get("conversation") is runtime
     assert isinstance(manager.get("conversation"), ModelRuntime)
+    
+def test_save_unready_model_propagates_runtime_error() -> None:
+    manager = ModelManager()
+    manager.register("conversation", create_runtime("ConversationModel"))
+
+    with pytest.raises(RuntimeError, match="loaded"):
+        manager.save("conversation", "model.bin")
