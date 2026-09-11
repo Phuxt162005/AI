@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
+import re
 from typing import Any
 
 from core.types import InputData, InputType
@@ -155,24 +156,40 @@ class RequestUnderstanding:
         "nhân",
         "chia",
     )
+    
+    _CHAT_KEYWORDS = (
+    "hello",
+    "hi",
+    "hey",
+    "how are you",
+    "how are things",
+    "how's it going",
+    "xin chào",
+    "chào",
+    "bạn khỏe không",
+    )
 
     _QUESTION_KEYWORDS = (
-        "what",
-        "why",
-        "when",
-        "where",
-        "who",
-        "how",
-        "what is",
-        "what are",
-        "là gì",
-        "tại sao",
-        "khi nào",
-        "ở đâu",
-        "ai là",
-        "như thế nào",
-        "thế nào",
-        "thì sao",
+    "what",
+    "why",
+    "when",
+    "where",
+    "who",
+    "how",
+    "what is",
+    "what are",
+    "do you remember",
+    "did you remember",
+    "bạn có nhớ",
+    "bạn còn nhớ",
+    "là gì",
+    "tại sao",
+    "khi nào",
+    "ở đâu",
+    "ai là",
+    "như thế nào",
+    "thế nào",
+    "thì sao",
     )
 
     _MULTI_STEP_MARKERS = (
@@ -229,6 +246,9 @@ class RequestUnderstanding:
             confidence = 0.90
         elif self._contains_any(normalized, self._SEARCH_KEYWORDS):
             intent = Intent.SEARCH
+            confidence = 0.90
+        elif self._contains_any(normalized, self._CHAT_KEYWORDS):
+            intent = Intent.CHAT
             confidence = 0.90
         elif self._contains_any(normalized, self._QUESTION_KEYWORDS):
             intent = Intent.QUESTION
@@ -289,10 +309,15 @@ class RequestUnderstanding:
 
     @staticmethod
     def _contains_any(text: str, keywords: tuple[str, ...]) -> bool:
-        """Return whether text contains one of the supplied keywords."""
+        """Return whether text contains one of the supplied words or phrases."""
 
-        return any(keyword in text for keyword in keywords)
+        for keyword in keywords:
+            pattern = rf"(?<!\w){re.escape(keyword)}(?!\w)"
 
+            if re.search(pattern, text, re.IGNORECASE):
+                return True
+        return False
+    
     @staticmethod
     def _estimate_complexity(
         text: str,
@@ -438,7 +463,14 @@ class TaskDecomposer:
 
     @staticmethod
     def _contains_any(text: str, keywords: tuple[str, ...]) -> bool:
-        return any(keyword in text for keyword in keywords)
+        """Return whether text contains one of the supplied words or phrases."""
+
+        for keyword in keywords:
+            pattern = rf"(?<!\w){re.escape(keyword)}(?!\w)"
+
+            if re.search(pattern, text, re.IGNORECASE):
+                return True 
+        return False
 
 class DecisionEngine:
     """Select the next high-level action from understanding and plan state."""
