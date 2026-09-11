@@ -3,7 +3,7 @@
 import pytest
 
 from core.ai_core import AICoreService
-from core.interfaces import MemoryInterface
+from core.interfaces import MemoryInterface, ModelInterface
 from core.types import InputData, InputType, OutputData
 
 from self_built.agent import (
@@ -16,15 +16,17 @@ from self_built.agent_planning import AgentPlanner
 from self_built.tools import ToolExecutor, ToolRegistry
 
 
-class FakeRuntime:
-    """Minimal AI Core runtime for tests."""
+from core.interfaces import ModelInterface
+
+
+class FakeRuntime(ModelInterface):
+    """Minimal AI Core model for tests."""
 
     def __init__(self) -> None:
-        self.is_ready = True
         self.calls: list[str] = []
 
     def load(self, source: str | None = None) -> None:
-        self.is_ready = True
+        pass
 
     def save(self, destination: str) -> None:
         pass
@@ -80,10 +82,8 @@ def build_ai_core() -> AICoreService:
     from core.ai_core import ModelManager, ModelRuntime
 
     manager = ModelManager()
-    runtime = ModelRuntime(
-        model=FakeRuntime(),
-        name="fake",
-    )
+    runtime = ModelRuntime(model=FakeRuntime())
+    runtime.load()
     manager.register("fake", runtime)
 
     return AICoreService(manager)
