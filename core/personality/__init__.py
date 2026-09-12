@@ -26,6 +26,13 @@ from .personality import (
     default_behavior_rules,
 )
 
+from .context import (
+    ContextAwareResponder,
+    ConversationContext,
+    MemoryContext,
+    ResponsePlan,
+)
+
 __all__ = [
     "Emotion",
     "EmotionEvent",
@@ -47,4 +54,8 @@ __all__ = [
     "SituationTag",
     "Tone",
     "default_behavior_rules",
+    "ContextAwareResponder",
+    "ConversationContext",
+    "MemoryContext",
+    "ResponsePlan",
 ]
