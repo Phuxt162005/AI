@@ -10,6 +10,22 @@ from .emotion import (
     PersonalityState,
 )
 
+from .personality import (
+    BehaviorContext,
+    BehaviorDecision,
+    BehaviorEngine,
+    BehaviorRule,
+    BehaviorType,
+    FormalityLevel,
+    PersonalityProfile,
+    PersonalityTrait,
+    ResponseLength,
+    ResponseStyle,
+    SituationTag,
+    Tone,
+    default_behavior_rules,
+)
+
 __all__ = [
     "Emotion",
     "EmotionEvent",
@@ -18,4 +34,17 @@ __all__ = [
     "MoodState",
     "MoodType",
     "PersonalityState",
+    "BehaviorContext",
+    "BehaviorDecision",
+    "BehaviorEngine",
+    "BehaviorRule",
+    "BehaviorType",
+    "FormalityLevel",
+    "PersonalityProfile",
+    "PersonalityTrait",
+    "ResponseLength",
+    "ResponseStyle",
+    "SituationTag",
+    "Tone",
+    "default_behavior_rules",
 ]
