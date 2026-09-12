@@ -336,6 +336,10 @@ class BehaviorEngine:
                 context,
                 state,
             )
+
+            if score < 0.25:
+                continue
+
             decision = BehaviorDecision(
                 behavior=rule.behavior,
                 strength=_clamp(score, 0.0, 1.0),
@@ -385,7 +389,7 @@ class BehaviorEngine:
         if state.emotion.emotion in {Emotion.SADNESS, Emotion.CONCERN}:
             empathy = _blend(empathy, 1.0, 0.25)
 
-        if state.emotion.emotion in {Emotion.ANGER, Emotion.FEAR}:
+        if state.emotion.emotion in {Emotion.SADNESS, Emotion.CONCERN, Emotion.ANGER, Emotion.FEAR}:
             humor *= 0.25
 
         tone = self._select_tone(
