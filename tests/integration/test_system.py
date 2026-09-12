@@ -23,27 +23,16 @@ class FakeModel(ModelInterface):
         return f"AI:{inputs}"
 
     def metadata(self) -> dict[str, object]:
-        return {
-            "name": "fake",
-        }
+        return {"name": "fake"}
 
 
 def build_ai_core() -> AICoreService:
     """Build a minimal AI Core for integration tests."""
 
     manager = ModelManager()
-
-    runtime = ModelRuntime(
-        model=FakeModel(),
-    )
-
+    runtime = ModelRuntime(model=FakeModel())
     runtime.load()
-
-    manager.register(
-        "fake",
-        runtime,
-    )
-
+    manager.register("fake", runtime)
     return AICoreService(manager)
 
 
@@ -63,10 +52,7 @@ def build_agent() -> ProjectAgent:
 def create_input(text: str) -> InputData:
     """Create a text input."""
 
-    return InputData(
-        type=InputType.TEXT,
-        content=text,
-    )
+    return InputData(type=InputType.TEXT, content=text)
 
 
 def test_system_integration_requires_agent() -> None:
@@ -94,13 +80,8 @@ def test_system_integration_exposes_agent() -> None:
 def test_system_integration_processes_input() -> None:
     """Input must flow through Agent and return OutputData."""
 
-    system = SystemIntegration(
-        build_agent(),
-    )
-
-    output = system.process(
-        create_input("Hello"),
-    )
+    system = SystemIntegration(build_agent())
+    output = system.process(create_input("Hello"))
 
     assert isinstance(output, OutputData)
     assert output.content.startswith("AI:")
@@ -109,18 +90,14 @@ def test_system_integration_processes_input() -> None:
 def test_system_integration_rejects_invalid_input() -> None:
     """SystemIntegration must reject non-InputData values."""
 
-    system = SystemIntegration(
-        build_agent(),
-    )
+    system = SystemIntegration(build_agent())
 
     try:
         system.process("Hello")  # type: ignore[arg-type]
     except TypeError:
         return
 
-    raise AssertionError(
-        "SystemIntegration must reject invalid input."
-    )
+    raise AssertionError("SystemIntegration must reject invalid input.")
 
 
 def test_system_integration_preserves_agent_result() -> None:
