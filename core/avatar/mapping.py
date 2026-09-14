@@ -228,11 +228,7 @@ class AvatarMapper:
             # Empathy/warmth should not create a new emotion.
             # They only slightly influence how strongly the existing
             # emotion is presented.
-            style_factor = (
-                0.9
-                + 0.05 * response_style.warmth
-                + 0.05 * response_style.empathy
-            )
+            style_factor = (1.0 + 0.05 * response_style.warmth + 0.05 * response_style.empathy)
             intensity *= style_factor
 
         return max(0.0, min(1.0, intensity))
