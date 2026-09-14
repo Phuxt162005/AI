@@ -12,6 +12,14 @@ from .animation import (
 )
 from .avatar import Avatar
 from .mapping import AvatarMapper, AvatarMappingResult
+from .model import (
+    MockVTuberModel,
+    ModelExpression,
+    ModelParameter,
+    ModelPose,
+    ModelSnapshot,
+    VTuberModel,
+)
 from .state import (
     AvatarAction,
     AvatarActionType,
@@ -41,4 +49,10 @@ __all__ = [
     "AnimationState",
     "AnimationType",
     "AvatarAnimationMapper",
+    "VTuberModel",
+    "MockVTuberModel",
+    "ModelParameter",
+    "ModelExpression",
+    "ModelPose",
+    "ModelSnapshot",
 ]
