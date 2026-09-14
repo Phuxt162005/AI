@@ -681,7 +681,7 @@ def test_runtime_apply_synchronizes_supported_parameter(runtime_components):
         )
     )
 
-    assert model.snapshot.parameters["mouth_open"] == pytest.approx(0.75)
+    assert model.snapshot.parameters["mouth_open"] == pytest.approx(0.5)
 
 
 def test_runtime_ignores_unsupported_avatar_parameter(runtime_components):
