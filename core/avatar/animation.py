@@ -74,6 +74,15 @@ class AnimationDefinition:
         object.__setattr__(self, "name", name)
         object.__setattr__(self, "metadata", dict(self.metadata))
 
+    @property
+    def is_transient(self) -> bool:
+        """Return whether this animation is a short-lived animation."""
+
+        return self.type in {
+            AnimationType.EMOTION,
+            AnimationType.REACT,
+            AnimationType.TRANSITION,
+        }
 
 @dataclass(frozen=True)
 class AnimationIntent:
@@ -289,6 +298,25 @@ class AnimationController:
 
         return self._state
 
+    def _create_transition(
+        self,
+        current: AnimationDefinition,
+        target: AnimationDefinition,
+    ) -> AnimationDefinition:
+        """Create a technology-independent transition animation."""
+
+        return AnimationDefinition(
+            name=f"transition_{current.name}_to_{target.name}",
+            type=AnimationType.TRANSITION,
+            duration=0.1,
+            priority=max(current.priority, target.priority),
+            loop=False,
+            metadata={
+                "from_animation": current.name,
+                "to_animation": target.name,
+            },
+        )
+    
     def submit(self, intent: AnimationIntent) -> AnimationAction:
         """Submit an animation intent.
 
@@ -296,7 +324,10 @@ class AnimationController:
         - there is no current animation
         - the current animation has stopped
         - the new animation has equal or higher priority
-        """
+
+        A short technology-independent transition is created when an
+        active
+        animation is replaced by another animation."""
 
         current = self._state.animation
 
@@ -306,10 +337,21 @@ class AnimationController:
         if self._state.playback is AnimationPlaybackState.STOPPED:
             self._start(intent.animation)
             return AnimationAction.STARTED
-        if intent.animation.priority < current.priority:
+        if (
+            intent.animation.priority < current.priority
+            and not current.is_transient
+        ):
             return AnimationAction.IGNORED
 
-        self._start(intent.animation)
+        transition = self._create_transition(
+            current=current,
+            target=intent.animation,
+        )
+        self._state = AnimationState(
+            animation=transition,
+            elapsed_time=0.0,
+            playback=AnimationPlaybackState.PLAYING,
+        )
         return AnimationAction.TRANSITIONED
 
     def submit_action(self, action: AvatarAction) -> AnimationAction:
