@@ -1,6 +1,7 @@
 """Avatar system package."""
 
 from .avatar import Avatar
+from .mapping import AvatarMapper, AvatarMappingResult
 from .state import (
     AvatarAction,
     AvatarActionType,
@@ -13,6 +14,8 @@ from .state import (
 
 __all__ = [
     "Avatar",
+    "AvatarMapper",
+    "AvatarMappingResult",
     "AvatarAction",
     "AvatarActionType",
     "AvatarActivity",
