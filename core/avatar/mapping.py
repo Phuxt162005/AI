@@ -19,7 +19,6 @@ from core.personality import (
     MoodState,
     PersonalityState,
     ResponseStyle,
-    Tone,
 )
 
 from .state import (
