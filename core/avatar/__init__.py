@@ -1,5 +1,15 @@
 """Avatar system package."""
 
+from .animation import (
+    AnimationAction,
+    AnimationController,
+    AnimationDefinition,
+    AnimationIntent,
+    AnimationPlaybackState,
+    AnimationState,
+    AnimationType,
+    AvatarAnimationMapper,
+)
 from .avatar import Avatar
 from .mapping import AvatarMapper, AvatarMappingResult
 from .state import (
@@ -23,4 +33,12 @@ __all__ = [
     "AvatarPose",
     "AvatarState",
     "AvatarVisibility",
+    "AnimationAction",
+    "AnimationController",
+    "AnimationDefinition",
+    "AnimationIntent",
+    "AnimationPlaybackState",
+    "AnimationState",
+    "AnimationType",
+    "AvatarAnimationMapper",
 ]
