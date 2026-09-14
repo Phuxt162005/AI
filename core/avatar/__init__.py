@@ -29,6 +29,14 @@ from .state import (
     AvatarState,
     AvatarVisibility,
 )
+from .renderer import (
+    AvatarRenderer,
+    MockAvatarRenderer,
+)
+from .runtime import (
+    AvatarRuntime,
+    AvatarRuntimeState,
+)
 
 __all__ = [
     "Avatar",
@@ -55,4 +63,8 @@ __all__ = [
     "ModelExpression",
     "ModelPose",
     "ModelSnapshot",
+    "AvatarRenderer",
+    "MockAvatarRenderer",
+    "AvatarRuntime",
+    "AvatarRuntimeState",
 ]
