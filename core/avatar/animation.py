@@ -291,6 +291,7 @@ class AnimationController:
 
     def __init__(self, initial_state: AnimationState | None = None) -> None:
         self._state = initial_state or AnimationState()
+        self._transition_target: AnimationDefinition | None = None
 
     @property
     def state(self) -> AnimationState:
@@ -326,11 +327,10 @@ class AnimationController:
         - the new animation has equal or higher priority
 
         A short technology-independent transition is created when an
-        active
-        animation is replaced by another animation."""
+        active animation is replaced by another animation.
+        """
 
         current = self._state.animation
-
         if current is None:
             self._start(intent.animation)
             return AnimationAction.STARTED
@@ -347,11 +347,13 @@ class AnimationController:
             current=current,
             target=intent.animation,
         )
+        self._transition_target = intent.animation
         self._state = AnimationState(
             animation=transition,
             elapsed_time=0.0,
             playback=AnimationPlaybackState.PLAYING,
         )
+
         return AnimationAction.TRANSITIONED
 
     def submit_action(self, action: AvatarAction) -> AnimationAction:
@@ -390,19 +392,21 @@ class AnimationController:
             return self._state
 
         if elapsed >= animation.duration:
+            if (
+                animation.type is AnimationType.TRANSITION
+                and self._transition_target is not None
+            ):
+                target = self._transition_target
+                self._transition_target = None
+                self._start(target)
+                return self._state
+
             self._state = AnimationState(
                 animation=animation,
-                elapsed_time=animation.duration,
-                playback=AnimationPlaybackState.STOPPED,
+                elapsed_time=elapsed,
+                playback=AnimationPlaybackState.PLAYING,
             )
             return self._state
-
-        self._state = AnimationState(
-            animation=animation,
-            elapsed_time=elapsed,
-            playback=AnimationPlaybackState.PLAYING,
-        )
-        return self._state
 
     def stop(self) -> AnimationState:
         """Stop the current animation without removing its definition."""
@@ -422,6 +426,7 @@ class AnimationController:
     def reset(self) -> AnimationState:
         """Reset the controller to its initial state."""
 
+        self._transition_target = None
         self._state = AnimationState()
         return self._state
 
