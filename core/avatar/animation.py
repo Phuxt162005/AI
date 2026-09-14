@@ -403,10 +403,17 @@ class AnimationController:
 
             self._state = AnimationState(
                 animation=animation,
-                elapsed_time=elapsed,
-                playback=AnimationPlaybackState.PLAYING,
+                elapsed_time=animation.duration,
+                playback=AnimationPlaybackState.STOPPED,
             )
             return self._state
+
+        self._state = AnimationState(
+            animation=animation,
+            elapsed_time=elapsed,
+            playback=AnimationPlaybackState.PLAYING,
+        )
+        return self._state
 
     def stop(self) -> AnimationState:
         """Stop the current animation without removing its definition."""
