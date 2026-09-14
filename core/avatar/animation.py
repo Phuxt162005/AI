@@ -418,6 +418,8 @@ class AnimationController:
     def stop(self) -> AnimationState:
         """Stop the current animation without removing its definition."""
 
+        self._transition_target = None
+        
         if self._state.animation is None:
             self._state = AnimationState()
             return self._state
