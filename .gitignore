@@ -12,5 +12,8 @@ env/
 models/*
 !models/.gitkeep
 
-data/*
+data/raw/*
+data/processing/*
+data/dataset/*
+data/quality/*
 !data/.gitkeep
