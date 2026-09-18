@@ -1,19 +1,339 @@
+# ============================================================
+# ProjectAI - Git Ignore
+# ============================================================
+
+
+# ============================================================
+# Python
+# ============================================================
+
 __pycache__/
 *.py[cod]
+*$py.class
+
+*.pyo
+*.pyd
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+.pyre/
+.pytype/
+
+
+# ============================================================
+# Virtual Environment
+# ============================================================
 
 .venv/
 venv/
 env/
+ENV/
+env.bak/
+venv.bak/
+
+
+# ============================================================
+# Python Packaging / Build
+# ============================================================
+
+build/
+dist/
+*.egg-info/
+.eggs/
+
+pip-wheel-metadata/
+
+MANIFEST
+
+
+# ============================================================
+# IDE / Editor
+# ============================================================
+
+.vscode/
+.idea/
+
+*.swp
+*.swo
+*.swn
+
+*.iml
+
+.DS_Store
+Thumbs.db
+
+
+# ============================================================
+# Environment / Secrets
+# ============================================================
 
 .env
+.env.*
+!.env.example
+
+*.pem
+*.key
+*.crt
+
+
+# ============================================================
+# Logs
+# ============================================================
 
 *.log
+logs/
 
-models/*
+
+# ============================================================
+# ProjectAI - Runtime Generated Files
+# ============================================================
+
+runtime/
+tmp/
+temp/
+
+cache/
+.cache/
+
+outputs/
+output/
+
+checkpoints/
+
+
+# ============================================================
+# ProjectAI - Models
+# ============================================================
+
+# Generated / trained model files
+models/*.bin
+models/*.pt
+models/*.pth
+models/*.ckpt
+models/*.onnx
+models/*.safetensors
+models/*.joblib
+models/*.pkl
+
+# Keep the directory itself available in Git
 !models/.gitkeep
 
+
+# ============================================================
+# ProjectAI - Data
+# ============================================================
+
+# ------------------------------------------------------------
+# RAW DATA
+# Raw data can be very large and should not be committed.
+# ------------------------------------------------------------
+
 data/raw/*
-data/processing/*
-data/dataset/*
-data/quality/*
-!data/.gitkeep
+!data/raw/.gitkeep
+
+
+# ------------------------------------------------------------
+# PROCESSING DATA
+# Ignore generated/intermediate processing data.
+#
+# IMPORTANT:
+# The directory itself is NOT ignored.
+# Therefore Python source files such as:
+#
+# data/processing/cleaner.py
+# data/processing/deduplicator.py
+# data/processing/filter.py
+# data/processing/normalizer.py
+# data/processing/balancer.py
+# data/processing/pipeline.py
+#
+# remain trackable by Git.
+# ------------------------------------------------------------
+
+data/processing/*.json
+data/processing/*.jsonl
+data/processing/*.csv
+data/processing/*.tsv
+data/processing/*.txt
+data/processing/*.parquet
+data/processing/*.pkl
+data/processing/*.pickle
+data/processing/*.bin
+data/processing/*.npy
+data/processing/*.npz
+
+data/processing/output/
+data/processing/outputs/
+data/processing/tmp/
+data/processing/temp/
+
+
+# ------------------------------------------------------------
+# DATASET
+# Generated dataset files should not be committed.
+#
+# Python implementation files remain trackable.
+# ------------------------------------------------------------
+
+data/dataset/*.json
+data/dataset/*.jsonl
+data/dataset/*.csv
+data/dataset/*.tsv
+data/dataset/*.txt
+data/dataset/*.parquet
+data/dataset/*.pkl
+data/dataset/*.pickle
+data/dataset/*.bin
+data/dataset/*.npy
+data/dataset/*.npz
+
+data/dataset/train/
+data/dataset/validation/
+data/dataset/test/
+data/dataset/output/
+data/dataset/outputs/
+data/dataset/tmp/
+data/dataset/temp/
+
+
+# ------------------------------------------------------------
+# QUALITY DATA
+# Ignore generated quality reports/results.
+#
+# Python source files such as:
+# data/quality/quality_check.py
+#
+# remain trackable.
+# ------------------------------------------------------------
+
+data/quality/*.json
+data/quality/*.jsonl
+data/quality/*.csv
+data/quality/*.tsv
+data/quality/*.txt
+data/quality/*.html
+data/quality/*.xml
+data/quality/*.log
+data/quality/*.pkl
+data/quality/*.pickle
+
+data/quality/output/
+data/quality/outputs/
+data/quality/reports/
+data/quality/tmp/
+data/quality/temp/
+
+
+# ============================================================
+# ProjectAI - Data Generated Files
+# ============================================================
+
+*.arrow
+*.feather
+*.parquet
+
+
+# ============================================================
+# Jupyter
+# ============================================================
+
+.ipynb_checkpoints/
+
+
+# ============================================================
+# Database
+# ============================================================
+
+*.sqlite
+*.sqlite3
+*.db
+
+# Local database directories
+database/data/
+database/runtime/
+database/tmp/
+
+
+# ============================================================
+# Temporary Files
+# ============================================================
+
+*.tmp
+*.temp
+*.bak
+*.backup
+
+~$*
+*.orig
+
+
+# ============================================================
+# OS Files
+# ============================================================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+Icon
+
+._*
+
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+ehthumbs.db
+Desktop.ini
+
+
+# ============================================================
+# Large Archives
+# ============================================================
+
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+
+# ============================================================
+# Large Media / Generated Assets
+# ============================================================
+
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wav
+*.flac
+
+# Generated avatar assets
+avatar/output/
+avatar/outputs/
+
+
+# ============================================================
+# Local Configuration
+# ============================================================
+
+config.local.json
+config.local.yaml
+config.local.yml
+
+
+# ============================================================
+# Test Generated Data
+# ============================================================
+
+tests/data/output/
+tests/data/outputs/
+tests/data/tmp/
+tests/data/temp/
