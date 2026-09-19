@@ -70,3 +70,85 @@ class DataQualityChecker:
                     f"{record.record_id}"
                 )
         return result
+    
+    def check_distribution(
+        self,
+        records: list[CleanRecord],
+        attribute: str,
+    ) -> dict[str, int]:
+        """Check record distribution by an attribute."""
+
+        distribution: dict[str, int] = {}
+
+        for record in records:
+            value = record.attributes.get(
+                attribute,
+                "__unknown__",
+            )
+            key = str(value)
+
+            distribution[key] = (
+                distribution.get(key, 0) + 1
+            )
+
+        return distribution
+
+    def check_split_distribution(
+        self,
+        splits: dict[
+            str,
+            list[CleanRecord],
+        ],
+        attribute: str,
+    ) -> dict[
+        str,
+        dict[str, int],
+    ]:
+        """Return attribute distribution for each split."""
+
+        return {
+            split_name: self.check_distribution(
+                records,
+                attribute,
+            )
+            for split_name, records in splits.items()
+        }
+
+    def check_bias(
+        self,
+        records: list[CleanRecord],
+        attribute: str,
+        minimum_ratio: float = 0.05,
+    ) -> list[str]:
+        """
+        Identify groups whose representation is below
+        the configured minimum ratio.
+        """
+
+        if not 0.0 <= minimum_ratio <= 1.0:
+            raise ValueError(
+                "minimum_ratio must be between 0 and 1"
+            )
+
+        distribution = self.check_distribution(
+            records,
+            attribute,
+        )
+
+        total = len(records)
+
+        if total == 0:
+            return []
+
+        warnings: list[str] = []
+
+        for group, count in distribution.items():
+            ratio = count / total
+
+            if ratio < minimum_ratio:
+                warnings.append(
+                    f"Underrepresented group: "
+                    f"{group} ({ratio:.2%})"
+                )
+
+        return warnings
