@@ -36,17 +36,21 @@ class MigrationRunner:
             not in applied_versions
         ]
 
-    def migrate(self, applied_versions: set[int]) -> list[int]:
+    def migrate(
+        self,
+        applied_versions: set[int],
+        execute: Any,
+    ) -> list[int]:
         """Apply all pending migrations in order."""
 
         applied: list[int] = []
-
         for migration in self.migrations:
             if migration.version in applied_versions:
                 continue
             migration.apply(execute)
             applied_versions.add(migration.version)
             applied.append(migration.version)
+
         return applied
 
     def rollback_last(self, applied_versions: set[int], execute: Any) -> int | None:
