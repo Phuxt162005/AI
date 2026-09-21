@@ -1,9 +1,14 @@
+"""Repositories for users, profiles, and preferences."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
+from database.access.data_access import DataAccess
 from database.access.repository import BaseRepository, EntityMapper
+
 
 @dataclass
 class User:
@@ -12,103 +17,174 @@ class User:
     email: str
     password_hash: str | None = None
     status: str = "active"
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
 
 @dataclass
 class UserProfile:
     user_id: int
     display_name: str | None = None
-    bio: str | None = None
     avatar_url: str | None = None
-    metadata: str | None = None
+    bio: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
 
 @dataclass
 class UserPreference:
     user_id: int
-    language: str | None = None
-    timezone: str | None = None
-    theme: str | None = None
-    preferences: str | None = None
+    language: str = "vi"
+    timezone: str = "Asia/Ho_Chi_Minh"
+    settings: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
-class UserMapper(EntityMapper[User]):
-    def from_row(self, row: dict[str, Any]) -> User:
-        return User(
-            id=row.get("id"),
-            username=row["username"],
-            email=row["email"],
-            password_hash=row.get("password_hash"),
-            status=row.get("status", "active"),
-        )
+def _user_from_row(row: Any) -> User:
+    return User(
+        id=row.get("id"),
+        username=row["username"],
+        email=row["email"],
+        password_hash=row.get("password_hash"),
+        status=row.get("status", "active"),
+        created_at=row.get("created_at"),
+        updated_at=row.get("updated_at"),
+    )
 
-    def to_row(self, entity: User) -> dict[str, Any]:
-        return {
-            "username": entity.username,
-            "email": entity.email,
-            "password_hash": entity.password_hash,
-            "status": entity.status,
-        }
 
-class UserProfileMapper(EntityMapper[UserProfile]):
-    def from_row(self, row: dict[str, Any]) -> UserProfile:
-        return UserProfile(
-            user_id=row["user_id"],
-            display_name=row.get("display_name"),
-            bio=row.get("bio"),
-            avatar_url=row.get("avatar_url"),
-            metadata=row.get("metadata"),
-        )
+def _user_to_row(entity: User) -> dict[str, Any]:
+    row = {
+        "username": entity.username,
+        "email": entity.email,
+        "password_hash": entity.password_hash,
+        "status": entity.status,
+    }
 
-    def to_row(self, entity: UserProfile) -> dict[str, Any]:
-        return {
-            "user_id": entity.user_id,
-            "display_name": entity.display_name,
-            "bio": entity.bio,
-            "avatar_url": entity.avatar_url,
-            "metadata": entity.metadata,
-        }
+    if entity.id is not None:
+        row["id"] = entity.id
 
-class UserPreferenceMapper(EntityMapper[UserPreference]):
-    def from_row(self, row: dict[str, Any]) -> UserPreference:
-        return UserPreference(
-            user_id=row["user_id"],
-            language=row.get("language"),
-            timezone=row.get("timezone"),
-            theme=row.get("theme"),
-            preferences=row.get("preferences"),
-        )
+    return row
 
-    def to_row(self, entity: UserPreference) -> dict[str, Any]:
-        return {
-            "user_id": entity.user_id,
-            "language": entity.language,
-            "timezone": entity.timezone,
-            "theme": entity.theme,
-            "preferences": entity.preferences,
-        }
+
+def _profile_from_row(row: Any) -> UserProfile:
+    return UserProfile(
+        user_id=row["user_id"],
+        display_name=row.get("display_name"),
+        avatar_url=row.get("avatar_url"),
+        bio=row.get("bio"),
+        created_at=row.get("created_at"),
+        updated_at=row.get("updated_at"),
+    )
+
+
+def _profile_to_row(entity: UserProfile) -> dict[str, Any]:
+    return {
+        "user_id": entity.user_id,
+        "display_name": entity.display_name,
+        "avatar_url": entity.avatar_url,
+        "bio": entity.bio,
+    }
+
+
+def _preference_from_row(row: Any) -> UserPreference:
+    return UserPreference(
+        user_id=row["user_id"],
+        language=row.get("language", "vi"),
+        timezone=row.get("timezone", "Asia/Ho_Chi_Minh"),
+        settings=row.get("settings"),
+        created_at=row.get("created_at"),
+        updated_at=row.get("updated_at"),
+    )
+
+
+def _preference_to_row(entity: UserPreference) -> dict[str, Any]:
+    return {
+        "user_id": entity.user_id,
+        "language": entity.language,
+        "timezone": entity.timezone,
+        "settings": entity.settings,
+    }
+
 
 class UserRepository(BaseRepository[User]):
-    def __init__(self, data_access):
+    """Repository for users."""
+
+    def __init__(self, data_access: DataAccess) -> None:
+        mapper = EntityMapper[User](
+            from_row=_user_from_row,
+            to_row=_user_to_row,
+        )
+
         super().__init__(
             data_access=data_access,
-            table="users",
-            mapper=UserMapper(),
+            table_name="users",
+            mapper=mapper,
             primary_key="id",
         )
 
+    def get_by_username(self, username: str) -> User | None:
+        sql = (
+            "SELECT * FROM `users` "
+            "WHERE `username` = %s"
+        )
+
+        row = self.data_access.query_one(sql, [username])
+
+        if row is None:
+            return None
+
+        return self.mapper.map_from_row(row)
+
+    def get_by_email(self, email: str) -> User | None:
+        sql = (
+            "SELECT * FROM `users` "
+            "WHERE `email` = %s"
+        )
+
+        row = self.data_access.query_one(sql, [email])
+
+        if row is None:
+            return None
+
+        return self.mapper.map_from_row(row)
+
+
 class UserProfileRepository(BaseRepository[UserProfile]):
-    def __init__(self, data_access):
+    """Repository for user profiles."""
+
+    def __init__(self, data_access: DataAccess) -> None:
+        mapper = EntityMapper[UserProfile](
+            from_row=_profile_from_row,
+            to_row=_profile_to_row,
+        )
+
         super().__init__(
             data_access=data_access,
-            table="user_profiles",
-            mapper=UserProfileMapper(),
+            table_name="user_profiles",
+            mapper=mapper,
             primary_key="user_id",
         )
 
+    def get_by_user_id(self, user_id: int) -> UserProfile | None:
+        return self.get_by_id(user_id)
+
+
 class UserPreferenceRepository(BaseRepository[UserPreference]):
-    def __init__(self, data_access):
+    """Repository for user preferences."""
+
+    def __init__(self, data_access: DataAccess) -> None:
+        mapper = EntityMapper[UserPreference](
+            from_row=_preference_from_row,
+            to_row=_preference_to_row,
+        )
+
         super().__init__(
             data_access=data_access,
-            table="user_preferences",
-            mapper=UserPreferenceMapper(),
+            table_name="user_preferences",
+            mapper=mapper,
             primary_key="user_id",
         )
+
+    def get_by_user_id(self, user_id: int) -> UserPreference | None:
+        return self.get_by_id(user_id)

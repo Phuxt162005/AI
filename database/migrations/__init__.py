@@ -1,14 +1,12 @@
-"""Database migration utilities."""
+"""Database migrations."""
 
 from database.migrations.migration import Migration
 from database.migrations.runner import MigrationRunner
-from .migration import Migration
-from .runner import MigrationRunner
-from .v002_runtime_data import (
-    V002_VERSION,
-    V002_NAME,
-    UP_SQL,
+from database.migrations.v002_runtime_data import (
     DOWN_SQL,
+    UP_SQL,
+    V002_NAME,
+    V002_VERSION,
 )
 
 __all__ = [

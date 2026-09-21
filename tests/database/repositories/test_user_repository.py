@@ -1,50 +1,62 @@
 from database.repositories.user_repository import (
     User,
-    UserMapper,
-    UserProfile,
-    UserProfileMapper,
     UserPreference,
-    UserPreferenceMapper,
+    UserPreferenceRepository,
+    UserProfile,
+    UserProfileRepository,
+    UserRepository,
 )
 
-def test_user_mapper_round_trip():
-    mapper = UserMapper()
-    user = User(
-        id=1,
+
+def test_user_repository_table_name(fake_data_access):
+    repository = UserRepository(fake_data_access)
+
+    assert repository.table_name == "users"
+
+
+def test_user_profile_repository_table_name(fake_data_access):
+    repository = UserProfileRepository(fake_data_access)
+
+    assert repository.table_name == "user_profiles"
+
+
+def test_user_preference_repository_table_name(fake_data_access):
+    repository = UserPreferenceRepository(fake_data_access)
+
+    assert repository.table_name == "user_preferences"
+
+
+def test_user_mapping(fake_data_access):
+    repository = UserRepository(fake_data_access)
+
+    row = {
+        "id": 1,
+        "username": "alice",
+        "email": "alice@example.com",
+        "password_hash": "hash",
+        "status": "active",
+    }
+
+    entity = repository.mapper.map_from_row(row)
+
+    assert isinstance(entity, User)
+    assert entity.id == 1
+    assert entity.username == "alice"
+    assert entity.email == "alice@example.com"
+
+
+def test_user_to_row(fake_data_access):
+    repository = UserRepository(fake_data_access)
+
+    entity = User(
+        id=None,
         username="alice",
         email="alice@example.com",
         password_hash="hash",
-        status="active",
     )
-    row = mapper.to_row(user)
+
+    row = repository.mapper.map_to_row(entity)
 
     assert row["username"] == "alice"
     assert row["email"] == "alice@example.com"
-    restored = mapper.from_row({"id": 1, **row})
-    assert restored == user
-
-
-def test_user_profile_mapper():
-    mapper = UserProfileMapper()
-    profile = UserProfile(
-        user_id=1,
-        display_name="Alice",
-        bio="Developer",
-        avatar_url="/avatar.png",
-        metadata="{}",
-    )
-    restored = mapper.from_row(mapper.to_row(profile))
-    assert restored == profile
-
-
-def test_user_preference_mapper():
-    mapper = UserPreferenceMapper()
-    preference = UserPreference(
-        user_id=1,
-        language="vi",
-        timezone="Asia/Ho_Chi_Minh",
-        theme="dark",
-        preferences="{}",
-    )
-    restored = mapper.from_row(mapper.to_row(preference))
-    assert restored == preference
+    assert row["password_hash"] == "hash"

@@ -1,9 +1,14 @@
+"""Repository for messages."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
+from database.access.data_access import DataAccess
 from database.access.repository import BaseRepository, EntityMapper
+
 
 @dataclass
 class Message:
@@ -11,44 +16,67 @@ class Message:
     conversation_id: int
     role: str
     content: str
+    created_at: datetime | None = None
 
-class MessageMapper(EntityMapper[Message]):
-    def from_row(self, row: dict[str, Any]) -> Message:
-        return Message(
-            id=row.get("id"),
-            conversation_id=row["conversation_id"],
-            role=row["role"],
-            content=row["content"],
-        )
 
-    def to_row(self, entity: Message) -> dict[str, Any]:
-        return {
-            "conversation_id": entity.conversation_id,
-            "role": entity.role,
-            "content": entity.content,
-        }
+def _message_from_row(row: Any) -> Message:
+    return Message(
+        id=row.get("id"),
+        conversation_id=row["conversation_id"],
+        role=row["role"],
+        content=row["content"],
+        created_at=row.get("created_at"),
+    )
+
+
+def _message_to_row(entity: Message) -> dict[str, Any]:
+    row = {
+        "conversation_id": entity.conversation_id,
+        "role": entity.role,
+        "content": entity.content,
+    }
+
+    if entity.id is not None:
+        row["id"] = entity.id
+
+    return row
+
 
 class MessageRepository(BaseRepository[Message]):
-    def __init__(self, data_access):
+    """Repository for messages."""
+
+    def __init__(self, data_access: DataAccess) -> None:
+        mapper = EntityMapper[Message](
+            from_row=_message_from_row,
+            to_row=_message_to_row,
+        )
+
         super().__init__(
             data_access=data_access,
-            table="messages",
-            mapper=MessageMapper(),
+            table_name="messages",
+            mapper=mapper,
             primary_key="id",
         )
 
-    def list_by_conversation(self, conversation_id: int) -> list[Message]:
-        rows = self.data_access.query(
-            """
-            SELECT id, conversation_id, role, content
-            FROM messages
-            WHERE conversation_id = %s
-            ORDER BY created_at ASC
-            """,
-            (conversation_id,),
+    def list_by_conversation(
+        self,
+        conversation_id: int,
+    ) -> list[Message]:
+        sql = (
+            "SELECT * FROM `messages` "
+            "WHERE `conversation_id` = %s "
+            "ORDER BY `created_at` ASC"
         )
 
-        return [self.mapper.from_row(row) for row in rows]
+        rows = self.data_access.query(
+            sql,
+            [conversation_id],
+        )
+
+        return [
+            self.mapper.map_from_row(row)
+            for row in rows
+        ]
 
     def list_recent(
         self,
@@ -58,15 +86,20 @@ class MessageRepository(BaseRepository[Message]):
         if limit <= 0:
             raise ValueError("limit must be greater than zero")
 
-        rows = self.data_access.query(
-            """
-            SELECT id, conversation_id, role, content
-            FROM messages
-            WHERE conversation_id = %s
-            ORDER BY created_at DESC
-            LIMIT %s
-            """,
-            (conversation_id, limit),
+        sql = (
+            "SELECT * FROM `messages` "
+            "WHERE `conversation_id` = %s "
+            "ORDER BY `created_at` DESC "
+            "LIMIT %s"
         )
-        rows.reverse()
-        return [self.mapper.from_row(row) for row in rows]
+        rows = self.data_access.query(
+            sql,
+            [conversation_id, limit],
+        )
+        messages = [
+            self.mapper.map_from_row(row)
+            for row in rows
+        ]
+        messages.reverse()
+
+        return messages
