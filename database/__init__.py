@@ -8,6 +8,13 @@ from database.access import (
 )
 from database.config import DatabaseConfig
 from database.connection import DatabaseConnection
+from database.repositories import (
+    UserRepository,
+    UserProfileRepository,
+    UserPreferenceRepository,
+    ConversationRepository,
+    MessageRepository,
+)
 
 __all__ = [
     "DatabaseConfig",
@@ -16,4 +23,10 @@ __all__ = [
     "BaseRepository",
     "EntityMapper",
     "Transaction",
+    "UserRepository",
+    "UserProfileRepository",
+    "UserPreferenceRepository",
+    "ConversationRepository",
+    "MessageRepository",
 ]
+

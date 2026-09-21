@@ -1,11 +1,26 @@
-"""Database schema definitions."""
-
-from database.schema.base_schema import (
+from .base_schema import (
     DATABASE_NAME,
     create_database_sql,
+)
+
+from .runtime_schema import (
+    CREATE_USERS_TABLE_SQL,
+    CREATE_USER_PROFILES_TABLE_SQL,
+    CREATE_USER_PREFERENCES_TABLE_SQL,
+    CREATE_CONVERSATIONS_TABLE_SQL,
+    CREATE_MESSAGES_TABLE_SQL,
+    CREATE_RUNTIME_INDEXES_SQL,
+    RUNTIME_SCHEMA_SQL,
 )
 
 __all__ = [
     "DATABASE_NAME",
     "create_database_sql",
+    "CREATE_USERS_TABLE_SQL",
+    "CREATE_USER_PROFILES_TABLE_SQL",
+    "CREATE_USER_PREFERENCES_TABLE_SQL",
+    "CREATE_CONVERSATIONS_TABLE_SQL",
+    "CREATE_MESSAGES_TABLE_SQL",
+    "CREATE_RUNTIME_INDEXES_SQL",
+    "RUNTIME_SCHEMA_SQL",
 ]
