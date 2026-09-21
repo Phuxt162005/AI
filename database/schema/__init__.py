@@ -1,26 +1,20 @@
-from .base_schema import (
+"""Database schema definitions."""
+
+from database.schema.base_schema import (
     DATABASE_NAME,
     create_database_sql,
 )
 
-from .runtime_schema import (
-    CREATE_USERS_TABLE_SQL,
-    CREATE_USER_PROFILES_TABLE_SQL,
-    CREATE_USER_PREFERENCES_TABLE_SQL,
-    CREATE_CONVERSATIONS_TABLE_SQL,
-    CREATE_MESSAGES_TABLE_SQL,
-    CREATE_RUNTIME_INDEXES_SQL,
-    RUNTIME_SCHEMA_SQL,
+from database.schema.memory_schema import (
+    MEMORY_TABLE,
+    MEMORY_TABLE_DROP_SQL,
+    MEMORY_TABLE_SQL,
 )
 
 __all__ = [
     "DATABASE_NAME",
     "create_database_sql",
-    "CREATE_USERS_TABLE_SQL",
-    "CREATE_USER_PROFILES_TABLE_SQL",
-    "CREATE_USER_PREFERENCES_TABLE_SQL",
-    "CREATE_CONVERSATIONS_TABLE_SQL",
-    "CREATE_MESSAGES_TABLE_SQL",
-    "CREATE_RUNTIME_INDEXES_SQL",
-    "RUNTIME_SCHEMA_SQL",
+    "MEMORY_TABLE",
+    "MEMORY_TABLE_SQL",
+    "MEMORY_TABLE_DROP_SQL",
 ]

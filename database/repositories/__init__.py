@@ -5,6 +5,7 @@ from .user_repository import (
 )
 from .conversation_repository import ConversationRepository
 from .message_repository import MessageRepository
+from .memory_repository import MemoryRepository
 
 __all__ = [
     "UserRepository",
@@ -12,4 +13,5 @@ __all__ = [
     "UserPreferenceRepository",
     "ConversationRepository",
     "MessageRepository",
+    "MemoryRepository",
 ]
