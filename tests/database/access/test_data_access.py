@@ -40,6 +40,9 @@ class FakeCursor:
 class FakeDatabaseConnection:
     def __init__(self):
         self.raw = FakeConnection()
+        
+    def connect(self):
+        return self
 
     def cursor(self):
         return self.raw.cursor()
@@ -142,7 +145,7 @@ def test_execute_rolls_back_when_not_in_transaction():
 
     try:
         data_access.execute(
-            "checkINSERT INTO test VALUES (%s)",
+            "INSERT INTO test VALUES (%s)",
             [1],
         )
         assert False
@@ -170,3 +173,4 @@ def test_execute_does_not_commit_inside_transaction():
 
     assert connection.raw.committed == 1
     assert data_access.transaction_active is False
+    

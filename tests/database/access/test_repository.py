@@ -167,7 +167,7 @@ def test_repository_list_all():
 def test_repository_update():
     connection, repository = create_repository()
 
-    entity = TestEntity(
+    entity = SampleEntity(
         id=1,
         name="Updated",
     )
@@ -206,7 +206,7 @@ def test_repository_delete():
 
 def test_entity_mapper():
     mapper = EntityMapper(
-        from_row=lambda row: TestEntity(
+        from_row=lambda row: SampleEntity(
             id=row["id"],
             name=row["name"],
         ),
@@ -216,7 +216,7 @@ def test_entity_mapper():
         },
     )
 
-    entity = TestEntity(
+    entity = SampleEntity(
         id=1,
         name="AI",
     )
