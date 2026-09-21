@@ -1,5 +1,6 @@
 from core.memory.memory import (
     MemoryItem,
+    MemoryStatus,
     MemoryType,
 )
 from core.memory.memory_service import MemoryService
@@ -28,11 +29,26 @@ class FakeMemoryRepository:
         self.items[entity_id] = entity
         return entity
 
+    def get_for_user(self, memory_id, user_id):
+        item = self.items.get(memory_id)
+
+        if item is None:
+            return None
+
+        if item.user_id != user_id:
+            return None
+
+        if item.status != MemoryStatus.ACTIVE:
+            return None
+
+        return item
+
     def find_by_content(self, user_id, content):
         for item in self.items.values():
             if (
                 item.user_id == user_id
                 and item.content == content
+                and item.status == MemoryStatus.ACTIVE
             ):
                 return item
 
@@ -42,7 +58,10 @@ class FakeMemoryRepository:
         return [
             item
             for item in self.items.values()
-            if item.user_id == user_id
+            if (
+                item.user_id == user_id
+                and item.status == MemoryStatus.ACTIVE
+            )
         ][:limit]
 
     def list_by_type(self, user_id, memory_type, limit=100):
@@ -52,6 +71,7 @@ class FakeMemoryRepository:
             if (
                 item.user_id == user_id
                 and item.memory_type == memory_type
+                and item.status == MemoryStatus.ACTIVE
             )
         ][:limit]
 
@@ -60,16 +80,7 @@ class FakeMemoryRepository:
 
     def expire_due(self):
         pass
-
-    @property
-    def data_access(self):
-        return None
-
-    @property
-    def mapper(self):
-        return None
-
-
+    
 def test_save_memory():
     repository = FakeMemoryRepository()
     service = MemoryService(repository)
@@ -153,9 +164,7 @@ def test_forget_memory():
         memory_type=MemoryType.LONG_TERM,
         content="Test memory",
     )
-
     service = MemoryService(repository)
-
     service.forget(
         memory_id=1,
         user_id=10,

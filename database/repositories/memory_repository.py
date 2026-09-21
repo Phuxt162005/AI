@@ -56,6 +56,41 @@ class MemoryRepository(BaseRepository[MemoryItem]):
             mapper=mapper,
             primary_key="memory_id",
         )
+        
+    def get_for_user(
+        self,
+        memory_id: int,
+        user_id: int,
+    ) -> MemoryItem | None:
+        """Retrieve an active memory belonging to a specific user."""
+
+        if memory_id <= 0:
+            raise ValueError("memory_id must be greater than zero")
+
+        if user_id <= 0:
+            raise ValueError("user_id must be greater than zero")
+
+        sql = (
+            "SELECT * FROM `memories` "
+            "WHERE `memory_id` = %s "
+            "AND `user_id` = %s "
+            "AND `status` = %s "
+            "AND (`expires_at` IS NULL OR `expires_at` > CURRENT_TIMESTAMP)"
+        )
+
+        row = self.data_access.query_one(
+            sql,
+            [
+                memory_id,
+                user_id,
+                MemoryStatus.ACTIVE.value,
+            ],
+        )
+
+        if row is None:
+            return None
+
+        return self.mapper.map_from_row(row)
 
     def list_by_user(
         self,

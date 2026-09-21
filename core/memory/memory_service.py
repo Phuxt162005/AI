@@ -45,33 +45,14 @@ class MemoryService:
     ) -> MemoryItem | None:
         """
         Retrieve one Memory belonging to the specified user.
-        The user_id check is part of the query to prevent cross-user access.
+
+        The repository performs the user isolation check.
         """
 
-        if memory_id <= 0:
-            raise ValueError("memory_id must be greater than zero")
-        if user_id <= 0:
-            raise ValueError("user_id must be greater than zero")
-
-        sql = (
-            "SELECT * FROM `memories` "
-            "WHERE `memory_id` = %s "
-            "AND `user_id` = %s "
-            "AND `status` = %s "
-            "AND (`expires_at` IS NULL OR `expires_at` > CURRENT_TIMESTAMP)"
+        return self.repository.get_for_user(
+            memory_id=memory_id,
+            user_id=user_id,
         )
-        row = self.repository.data_access.query_one(
-            sql,
-            [
-                memory_id,
-                user_id,
-                MemoryStatus.ACTIVE.value,
-            ],
-        )
-
-        if row is None:
-            return None
-        return self.repository.mapper.map_from_row(row)
 
     def retrieve(
         self,
@@ -109,8 +90,10 @@ class MemoryService:
 
         if memory_id is None:
             raise ValueError("memory_id must not be None")
+
         if user_id <= 0:
             raise ValueError("user_id must be greater than zero")
+
         current = self.get(
             memory_id=memory_id,
             user_id=user_id,
@@ -118,6 +101,7 @@ class MemoryService:
 
         if current is None:
             raise ValueError("Memory does not exist for this user")
+
         updated = MemoryItem(
             memory_id=current.memory_id,
             user_id=user_id,
@@ -129,6 +113,7 @@ class MemoryService:
             expires_at=expires_at,
             status=MemoryStatus.ACTIVE,
         )
+
         return self.repository.update(
             entity_id=memory_id,
             entity=updated,
