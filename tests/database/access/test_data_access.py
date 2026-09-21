@@ -142,7 +142,7 @@ def test_execute_rolls_back_when_not_in_transaction():
 
     try:
         data_access.execute(
-            "INSERT INTO test VALUES (%s)",
+            "checkINSERT INTO test VALUES (%s)",
             [1],
         )
         assert False
