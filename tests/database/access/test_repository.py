@@ -6,9 +6,8 @@ from database.access.repository import (
     EntityMapper,
 )
 
-
 @dataclass
-class TestEntity:
+class SampleEntity:
     id: int
     name: str
 
@@ -66,7 +65,7 @@ def create_repository():
     data_access = DataAccess(connection)
 
     mapper = EntityMapper(
-        from_row=lambda row: TestEntity(
+        from_row=lambda row: SampleEntity(
             id=row["id"],
             name=row["name"],
         ),
@@ -88,7 +87,7 @@ def create_repository():
 def test_repository_create():
     connection, repository = create_repository()
 
-    entity = TestEntity(
+    entity = SampleEntity(
         id=1,
         name="ProjectAI",
     )
@@ -121,7 +120,7 @@ def test_repository_get_by_id():
 
     result = repository.get_by_id(1)
 
-    assert result == TestEntity(
+    assert result == SampleEntity(
         id=1,
         name="ProjectAI",
     )
@@ -154,11 +153,11 @@ def test_repository_list_all():
     result = repository.list_all()
 
     assert result == [
-        TestEntity(
+        SampleEntity(
             id=1,
             name="AI",
         ),
-        TestEntity(
+        SampleEntity(
             id=2,
             name="Assistant",
         ),

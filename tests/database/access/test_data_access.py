@@ -119,3 +119,54 @@ def test_query_one():
     )
 
     assert result == {"id": 1}
+    
+def test_execute_rolls_back_when_not_in_transaction():
+    connection = FakeDatabaseConnection()
+    data_access = DataAccess(connection)
+
+    original_cursor = connection.cursor
+
+    def failing_cursor():
+        cursor = original_cursor()
+
+        def fail_execute(
+            sql,
+            parameters=(),
+        ):
+            raise RuntimeError("database error")
+
+        cursor.execute = fail_execute
+        return cursor
+
+    connection.cursor = failing_cursor
+
+    try:
+        data_access.execute(
+            "INSERT INTO test VALUES (%s)",
+            [1],
+        )
+        assert False
+    except RuntimeError:
+        assert True
+
+    assert connection.raw.committed == 0
+    assert connection.raw.rolled_back == 1
+    
+def test_execute_does_not_commit_inside_transaction():
+    connection = FakeDatabaseConnection()
+    data_access = DataAccess(connection)
+
+    data_access.begin_transaction()
+
+    data_access.execute(
+        "INSERT INTO test VALUES (%s)",
+        [1],
+    )
+
+    assert connection.raw.committed == 0
+    assert data_access.transaction_active is True
+
+    data_access.commit()
+
+    assert connection.raw.committed == 1
+    assert data_access.transaction_active is False

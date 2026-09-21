@@ -2,51 +2,48 @@
 
 from __future__ import annotations
 
-from database.connection import DatabaseConnection
+from database.access.data_access import DataAccess
+
 
 class Transaction:
     """Explicit database transaction."""
 
-    def __init__(self, connection: DatabaseConnection) -> None:
-        self.connection = connection
-        self._active = False
+    def __init__(
+        self,
+        data_access: DataAccess,
+    ) -> None:
+        self.data_access = data_access
 
     @property
     def active(self) -> bool:
         """Return whether the transaction is active."""
 
-        return self._active
+        return self.data_access.transaction_active
 
     def begin(self) -> None:
         """Begin a transaction."""
 
-        if self._active:
-            raise RuntimeError("Transaction is already active")
-
-        self.connection.connect()
-        self._active = True
+        self.data_access.begin_transaction()
 
     def commit(self) -> None:
         """Commit the transaction."""
 
-        if not self._active:
-            raise RuntimeError("No active transaction")
+        if not self.active:
+            raise RuntimeError(
+                "No active transaction"
+            )
 
-        try:
-            self.connection.commit()
-        finally:
-            self._active = False
+        self.data_access.commit()
 
     def rollback(self) -> None:
         """Rollback the transaction."""
 
-        if not self._active:
-            raise RuntimeError("No active transaction")
+        if not self.active:
+            raise RuntimeError(
+                "No active transaction"
+            )
 
-        try:
-            self.connection.rollback()
-        finally:
-            self._active = False
+        self.data_access.rollback()
 
     def __enter__(self) -> "Transaction":
         """Start a transaction context."""
