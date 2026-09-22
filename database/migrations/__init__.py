@@ -14,6 +14,12 @@ from database.migrations.v003_memory import (
     V003_NAME,
     V003_VERSION,
 )
+from database.migrations.v004_knowledge import (
+    DOWN_SQL as V004_DOWN_SQL,
+    UP_SQL as V004_UP_SQL,
+    V004_NAME,
+    V004_VERSION,
+)
 
 __all__ = [
     "Migration",
@@ -26,4 +32,8 @@ __all__ = [
     "V003_NAME",
     "V003_UP_SQL",
     "V003_DOWN_SQL",
+    "V004_VERSION",
+    "V004_NAME",
+    "V004_UP_SQL",
+    "V004_DOWN_SQL",
 ]

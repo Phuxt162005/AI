@@ -3,6 +3,11 @@ from .user_repository import (
     UserProfileRepository,
     UserPreferenceRepository,
 )
+from .knowledge_repository import (
+    ChunkRepository,
+    DocumentRepository,
+    DocumentVersionRepository,
+)
 from .conversation_repository import ConversationRepository
 from .message_repository import MessageRepository
 from .memory_repository import MemoryRepository
@@ -14,4 +19,7 @@ __all__ = [
     "ConversationRepository",
     "MessageRepository",
     "MemoryRepository",
+    "DocumentRepository",
+    "DocumentVersionRepository",
+    "ChunkRepository",
 ]
