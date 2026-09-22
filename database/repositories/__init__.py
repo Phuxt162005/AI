@@ -11,6 +11,19 @@ from .knowledge_repository import (
 from .conversation_repository import ConversationRepository
 from .message_repository import MessageRepository
 from .memory_repository import MemoryRepository
+from .agent_repository import (
+    AgentConfigurationRepository,
+    AgentExecutionRepository,
+    AgentRepository,
+    AgentTaskRepository,
+    AgentToolRepository,
+    ExecutionResultRepository,
+    GoalRepository,
+    PlanRepository,
+    PlanStepRepository,
+    ToolCallRepository,
+    ToolRepository,
+)
 
 __all__ = [
     "UserRepository",
@@ -22,4 +35,15 @@ __all__ = [
     "DocumentRepository",
     "DocumentVersionRepository",
     "ChunkRepository",
+    "AgentConfigurationRepository",
+    "AgentExecutionRepository",
+    "AgentRepository",
+    "AgentTaskRepository",
+    "AgentToolRepository",
+    "ExecutionResultRepository",
+    "GoalRepository",
+    "PlanRepository",
+    "PlanStepRepository",
+    "ToolCallRepository",
+    "ToolRepository",
 ]

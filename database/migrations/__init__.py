@@ -20,6 +20,12 @@ from database.migrations.v004_knowledge import (
     V004_NAME,
     V004_VERSION,
 )
+from database.migrations.v005_agent import (
+    DOWN_SQL as V005_DOWN_SQL,
+    UP_SQL as V005_UP_SQL,
+    V005_NAME,
+    V005_VERSION,
+)
 
 __all__ = [
     "Migration",
@@ -36,4 +42,8 @@ __all__ = [
     "V004_NAME",
     "V004_UP_SQL",
     "V004_DOWN_SQL",
+    "V005_VERSION",
+    "V005_NAME",
+    "V005_UP_SQL",
+    "V005_DOWN_SQL",
 ]
