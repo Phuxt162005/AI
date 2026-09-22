@@ -65,4 +65,4 @@ def test_schema_exports():
     assert PERSONALITY_TABLES_DOWN_SQL
 
     assert AVATAR_TABLES_UP_SQL
-    assert AVATAR_TABLES_DOWN_SQLpt
+    assert AVATAR_TABLES_DOWN_SQL
