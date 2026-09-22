@@ -26,6 +26,12 @@ from database.migrations.v005_agent import (
     V005_NAME,
     V005_VERSION,
 )
+from database.migrations.v006_model_personality_avatar import (
+    V006_VERSION,
+    V006_NAME,
+    UP_SQL as V006_UP_SQL,
+    DOWN_SQL as V006_DOWN_SQL,
+)
 
 __all__ = [
     "Migration",

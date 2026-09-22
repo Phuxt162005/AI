@@ -24,6 +24,31 @@ from .agent_repository import (
     ToolCallRepository,
     ToolRepository,
 )
+from .model_repository import (
+    DatasetRepository,
+    EvaluationResultRepository,
+    ModelRegistryRepository,
+    ModelRepository,
+    ModelVersionRepository,
+    TrainingConfigurationRepository,
+    TrainingRunRepository,
+)
+
+from .personality_repository import (
+    EmotionRepository,
+    MoodRepository,
+    PersonalityRepository,
+    RelationshipRepository,
+)
+
+from .avatar_repository import (
+    AnimationRepository,
+    AudioRepository,
+    AvatarRepository,
+    ExpressionRepository,
+    VisualStateRepository,
+    VoiceRepository,
+)
 
 __all__ = [
     "UserRepository",
@@ -46,4 +71,23 @@ __all__ = [
     "PlanStepRepository",
     "ToolCallRepository",
     "ToolRepository",
+    "ModelRepository",
+    "ModelVersionRepository",
+    "DatasetRepository",
+    "TrainingConfigurationRepository",
+    "TrainingRunRepository",
+    "EvaluationResultRepository",
+    "ModelRegistryRepository",
+
+    "PersonalityRepository",
+    "EmotionRepository",
+    "MoodRepository",
+    "RelationshipRepository",
+
+    "AvatarRepository",
+    "ExpressionRepository",
+    "AnimationRepository",
+    "VoiceRepository",
+    "AudioRepository",
+    "VisualStateRepository",
 ]

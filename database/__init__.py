@@ -15,6 +15,25 @@ from database.repositories import (
     ConversationRepository,
     MessageRepository,
 )
+from database.repositories import (
+    ModelRepository,
+    ModelVersionRepository,
+    DatasetRepository,
+    TrainingConfigurationRepository,
+    TrainingRunRepository,
+    EvaluationResultRepository,
+    ModelRegistryRepository,
+    PersonalityRepository,
+    EmotionRepository,
+    MoodRepository,
+    RelationshipRepository,
+    AvatarRepository,
+    ExpressionRepository,
+    AnimationRepository,
+    VoiceRepository,
+    AudioRepository,
+    VisualStateRepository,
+)
 
 __all__ = [
     "DatabaseConfig",
