@@ -1,3 +1,4 @@
+import pytest
 from datetime import datetime, timedelta, timezone
 
 from database.management.retention import (
@@ -35,3 +36,30 @@ def test_retention_manager_detects_expired_data():
     )
     old = datetime.now(timezone.utc) - timedelta(days=8)
     assert manager.is_expired(old)
+    
+def test_retention_soft_delete():
+    manager = RetentionManager(
+        RetentionPolicy(
+            retention_days=7,
+            allow_deletion=True,
+            soft_delete=True,
+        )
+    )
+
+    store = {
+        "dataset-1": {
+            "name": "training-data"
+        }
+    }
+
+    old = datetime.now(
+        timezone.utc
+    ) - timedelta(days=8)
+
+    assert manager.delete(
+        store,
+        "dataset-1",
+        old,
+    )
+
+    assert store["dataset-1"]["deleted"] is True

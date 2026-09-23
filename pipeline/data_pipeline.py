@@ -5,7 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
+
 StageFunction = Callable[[Any], Any]
+
 
 @dataclass(frozen=True)
 class PipelineStage:
@@ -21,7 +23,9 @@ class PipelineResult:
 
     success: bool
     value: Any = None
-    completed_stages: list[str] = field(default_factory=list)
+    completed_stages: list[str] = field(
+        default_factory=list
+    )
     failed_stage: str | None = None
     error: str | None = None
 
@@ -41,20 +45,81 @@ class FinalDataPipeline:
         "evaluation",
     )
 
+    RAG_STAGES = (
+        "document",
+        "chunking",
+        "text_cleaning",
+        "embedding_model",
+        "embedding_vector",
+        "vector_database",
+    )
+
     def __init__(
         self,
         stages: list[PipelineStage],
     ) -> None:
         self._stages = stages
-        self._validate_stage_order()
+        self._validate_stage_order(
+            names=[stage.name for stage in stages],
+            required=self.REQUIRED_STAGES,
+        )
 
-    def run(self, initial_input: Any) -> PipelineResult:
-        """Execute all configured pipeline stages."""
+    def run(
+        self,
+        initial_input: Any,
+    ) -> PipelineResult:
+        """Execute the complete training pipeline."""
 
+        return self._run_stages(
+            self._stages,
+            initial_input,
+        )
+
+    @classmethod
+    def create_rag_pipeline(
+        cls,
+        stages: list[PipelineStage],
+    ) -> "FinalDataPipeline":
+        """Create a pipeline for the RAG ingestion flow."""
+
+        pipeline = object.__new__(cls)
+        pipeline._stages = stages
+
+        pipeline._validate_stage_order(
+            names=[stage.name for stage in stages],
+            required=cls.RAG_STAGES,
+        )
+
+        return pipeline
+
+    def run_rag(
+        self,
+        initial_input: Any,
+    ) -> PipelineResult:
+        """Execute the RAG ingestion pipeline."""
+
+        self._validate_stage_order(
+            names=[
+                stage.name
+                for stage in self._stages
+            ],
+            required=self.RAG_STAGES,
+        )
+
+        return self._run_stages(
+            self._stages,
+            initial_input,
+        )
+
+    @staticmethod
+    def _run_stages(
+        stages: list[PipelineStage],
+        initial_input: Any,
+    ) -> PipelineResult:
         value = initial_input
         completed: list[str] = []
 
-        for stage in self._stages:
+        for stage in stages:
             try:
                 value = stage.function(value)
             except Exception as exc:
@@ -65,6 +130,7 @@ class FinalDataPipeline:
                     failed_stage=stage.name,
                     error=str(exc),
                 )
+
             completed.append(stage.name)
 
         return PipelineResult(
@@ -73,11 +139,13 @@ class FinalDataPipeline:
             completed_stages=completed,
         )
 
-    def _validate_stage_order(self) -> None:
-        names = [stage.name for stage in self._stages]
-
-        if names != list(self.REQUIRED_STAGES):
+    @staticmethod
+    def _validate_stage_order(
+        names: list[str],
+        required: tuple[str, ...],
+    ) -> None:
+        if names != list(required):
             raise ValueError(
                 "Pipeline stages must follow: "
-                + " -> ".join(self.REQUIRED_STAGES)
+                + " -> ".join(required)
             )

@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+
 @dataclass(frozen=True)
 class AuditEvent:
     """Represent one auditable system event."""
@@ -22,12 +23,16 @@ class AuditEvent:
     previous_hash: str = ""
     event_hash: str = ""
 
+
 class AuditLogger:
     """Write audit events to an append-only JSONL file."""
 
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
-        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
     def record(
         self,
@@ -39,7 +44,25 @@ class AuditLogger:
     ) -> AuditEvent:
         """Append an audit event."""
 
+        self._validate_required(
+            event_id,
+            "event_id",
+        )
+        self._validate_required(
+            actor_id,
+            "actor_id",
+        )
+        self._validate_required(
+            action,
+            "action",
+        )
+        self._validate_required(
+            resource,
+            "resource",
+        )
+
         previous_hash = self._last_hash()
+
         event = AuditEvent(
             event_id=event_id,
             actor_id=actor_id,
@@ -51,7 +74,9 @@ class AuditLogger:
             details=dict(details or {}),
             previous_hash=previous_hash,
         )
+
         event_hash = self._calculate_hash(event)
+
         event = AuditEvent(
             **{
                 **asdict(event),
@@ -82,6 +107,7 @@ class AuditLogger:
             return []
 
         events: list[AuditEvent] = []
+
         with self.path.open(
             "r",
             encoding="utf-8",
@@ -90,12 +116,16 @@ class AuditLogger:
                 if not line.strip():
                     continue
 
-                events.append(AuditEvent(**json.loads(line)))
+                events.append(
+                    AuditEvent(
+                        **json.loads(line)
+                    )
+                )
 
         return events
 
     def verify_integrity(self) -> bool:
-        """Verify the audit hash chain."""
+        """Verify the complete audit hash chain."""
 
         events = self.read_events()
         previous_hash = ""
@@ -104,8 +134,11 @@ class AuditLogger:
             if event.previous_hash != previous_hash:
                 return False
 
-            expected = self._calculate_hash(event)
-            if event.event_hash != expected:
+            expected_hash = self._calculate_hash(
+                event
+            )
+
+            if event.event_hash != expected_hash:
                 return False
 
             previous_hash = event.event_hash
@@ -121,7 +154,24 @@ class AuditLogger:
         return events[-1].event_hash
 
     @staticmethod
-    def _calculate_hash(event: AuditEvent) -> str:
+    def _validate_required(
+        value: str,
+        field_name: str,
+    ) -> None:
+        if not isinstance(value, str):
+            raise TypeError(
+                f"{field_name} must be a string"
+            )
+
+        if not value.strip():
+            raise ValueError(
+                f"{field_name} must not be empty"
+            )
+
+    @staticmethod
+    def _calculate_hash(
+        event: AuditEvent,
+    ) -> str:
         payload = asdict(event)
         payload["event_hash"] = ""
 
