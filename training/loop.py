@@ -14,6 +14,7 @@ from training.resource_guard import (
     ResourceAction,
     ResourceController,
     ResourceLimits,
+    ResourceState,
 )
 
 
@@ -105,19 +106,24 @@ class TrainingLoop:
         # -------------------------------------------------
         # PRE-FLIGHT
         # -------------------------------------------------
+        preflight_decision = (self.resource_controller.preflight())
 
-        self.resource_controller.preflight()
-
+        if (
+            preflight_decision.state
+            != ResourceState.SAFE
+        ):
+            raise RuntimeError(
+                "Training blocked by Resource Guard "
+                f"before training: "
+                f"state={preflight_decision.state.value}"
+            )
         losses: list[float] = []
-
         global_step = 0
 
         for epoch in range(epochs):
 
             # Check before every epoch.
-            decision = (
-                self.resource_controller.check()
-            )
+            decision = (self.resource_controller.check())
 
             if (
                 decision.action
@@ -140,14 +146,8 @@ class TrainingLoop:
                         checkpoint
                     ),
                 )
-
-            loss = self.train_batch(
-                inputs,
-                targets,
-            )
-
+            loss = self.train_batch(inputs, targets)
             losses.append(loss)
-
             global_step += 1
 
             # Periodic resource check.
@@ -156,31 +156,20 @@ class TrainingLoop:
                 % self.configuration.resource_check_interval
                 == 0
             ):
-                decision = (
-                    self.resource_controller.check()
-                )
+                decision = (self.resource_controller.check())
 
-                if (
-                    decision.action
-                    == ResourceAction.WARNING
-                ):
+                if (decision.action == ResourceAction.WARNING):
                     print(
                         "[ResourceGuard] WARNING: "
                         "resource usage is approaching "
                         "the configured limit."
                     )
-
-                elif (
-                    decision.action
-                    == ResourceAction.CHECKPOINT
-                ):
+                elif (decision.action  == ResourceAction.CHECKPOINT):
                     checkpoint = (
                         self._save_emergency_checkpoint(
                             epoch=epoch,
                             step=global_step,
-                            reason=(
-                                "resource_limit_exceeded"
-                            ),
+                            reason=("resource_limit_exceeded"),
                         )
                     )
 
@@ -191,9 +180,7 @@ class TrainingLoop:
                             "Resource limit exceeded "
                             "during training."
                         ),
-                        checkpoint_path=str(
-                            checkpoint
-                        ),
+                        checkpoint_path=str(checkpoint),
                     )
 
             # Mandatory check at epoch end.
