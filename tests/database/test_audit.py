@@ -62,20 +62,7 @@ def test_audit_detects_tampering(tmp_path: Path):
 
     assert not logger.verify_integrity()
     
-def test_audit_requires_required_fields(
-    tmp_path: Path,
-):
-    path = tmp_path / "audit.jsonl"
-    logger = AuditLogger(path)
-
-    with pytest.raises(ValueError):
-        logger.record(
-            event_id="",
-            actor_id="user-1",
-            action="create",
-            resource="dataset:1",
-        )
-        
+     
 def test_audit_requires_required_fields(
     tmp_path: Path,
 ):
