@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
+import pickle
 from pathlib import Path
 from typing import Any
 
-import torch
-
 
 class CheckpointManager:
-    """Save and load training checkpoints."""
+    """Save and load generic training checkpoints."""
 
     def __init__(
         self,
@@ -23,48 +22,47 @@ class CheckpointManager:
 
     def save(
         self,
-        model: torch.nn.Module,
-        optimizer: torch.optim.Optimizer,
-        epoch: int,
-        step: int,
-        configuration: dict[str, Any],
-        filename: str = "latest.pt",
+        state: dict[str, Any],
+        filename: str = "latest.pkl",
     ) -> Path:
+        if not isinstance(state, dict):
+            raise TypeError(
+                "Checkpoint state must be a dictionary."
+            )
+
         path = self.directory / filename
+        temporary_path = path.with_suffix(
+            path.suffix + ".tmp"
+        )
 
-        state = {
-            "model_state_dict": (
-                model.state_dict()
-            ),
-            "optimizer_state_dict": (
-                optimizer.state_dict()
-            ),
-            "epoch": epoch,
-            "step": step,
-            "configuration": configuration,
-        }
+        with temporary_path.open("wb") as file:
+            pickle.dump(
+                state,
+                file,
+                protocol=pickle.HIGHEST_PROTOCOL,
+            )
 
-        torch.save(state, path)
+        temporary_path.replace(path)
 
         return path
 
     def load(
         self,
         path: str | Path,
-        model: torch.nn.Module,
-        optimizer: torch.optim.Optimizer,
     ) -> dict[str, Any]:
-        checkpoint = torch.load(
-            path,
-            map_location="cpu",
-        )
+        checkpoint_path = Path(path)
 
-        model.load_state_dict(
-            checkpoint["model_state_dict"]
-        )
+        if not checkpoint_path.exists():
+            raise FileNotFoundError(
+                f"Checkpoint not found: {checkpoint_path}"
+            )
 
-        optimizer.load_state_dict(
-            checkpoint["optimizer_state_dict"]
-        )
+        with checkpoint_path.open("rb") as file:
+            state = pickle.load(file)
 
-        return checkpoint
+        if not isinstance(state, dict):
+            raise ValueError(
+                "Invalid checkpoint format."
+            )
+
+        return state
