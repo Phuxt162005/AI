@@ -23,13 +23,28 @@ class FakeResourceController:
     """Fake resource controller for training-loop tests."""
 
     def __init__(self, decisions):
-        self.decisions = iter(decisions)
+        if not decisions:
+            raise ValueError(
+                "At least one resource decision is required."
+            )
+
+        self.decisions = list(decisions)
+        self.index = 0
+
+    def _next(self):
+        if self.index >= len(self.decisions):
+            return self.decisions[-1]
+
+        decision = self.decisions[self.index]
+        self.index += 1
+
+        return decision
 
     def preflight(self):
-        return next(self.decisions)
+        return self._next()
 
     def check(self):
-        return next(self.decisions)
+        return self._next()
 
 
 def make_decision(
@@ -49,18 +64,24 @@ def make_decision(
         ),
     )
 
+class FakeOptimizer:
+    """Minimal optimizer used by TrainingLoop tests."""
+
+    def __init__(self):
+        self.step_count = 0
+
+    def step(self, gradients):
+        self.step_count += 1
 
 class FakeModel:
     """
     Minimal model used to test TrainingLoop control flow.
-
-    It is intentionally independent from the real model
-    implementation because these tests focus on resource
-    protection rather than neural-network correctness.
+    The model only implements the interface required by
+    TrainingLoop. It does not test neural-network behavior.
     """
 
     def __init__(self):
-        self.optimizer = object()
+        self.optimizer = FakeOptimizer()
         self.network = FakeNetwork()
         self.loss = FakeLoss()
 
@@ -337,3 +358,4 @@ def test_warning_does_not_stop_training(
 
     assert history.stopped_safely is False
     assert len(history.losses) == 1
+    
