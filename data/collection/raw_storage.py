@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 from data.sources.internal import (InternalDatasetSource)
 from data.sources.huggingface import (HuggingFaceDatasetSource)
@@ -91,4 +91,4 @@ class RawDataStorage:
     def _dataset_directory(local_path: str) -> str:
         """Extract the dataset directory name."""
 
-        return Path(local_path).name
+        return PureWindowsPath(local_path).name
