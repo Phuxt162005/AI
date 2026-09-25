@@ -9,6 +9,9 @@ from data.dataset.splitter import (
     DatasetSplit,
     DatasetSplitter,
 )
+from data.dataset.training_builder import (
+    TrainingDatasetBuilder,
+)
 
 __all__ = [
     "DatasetBuilder",
@@ -16,4 +19,5 @@ __all__ = [
     "DatasetSplit",
     "DatasetSplitter",
     "TrainingDataset",
+    "TrainingDatasetBuilder",
 ]
