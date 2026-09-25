@@ -1,3 +1,4 @@
+import hashlib
 from pathlib import Path
 
 from data.collection.collection_record import (
@@ -141,8 +142,11 @@ def test_collect_file_records_checksum(
         "checksum_sha256"
     )
 
-    assert checksum
-    assert len(checksum) == 64
+    expected = hashlib.sha256(
+        source_file.read_bytes()
+    ).hexdigest()
+
+    assert checksum == expected
 
 
 def test_collect_file_records_format(
