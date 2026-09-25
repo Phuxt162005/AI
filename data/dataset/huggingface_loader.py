@@ -38,5 +38,20 @@ class HuggingFaceDatasetLoader:
 
         if source.subset is not None:
             kwargs["name"] = source.subset
-
         return load_dataset(**kwargs)
+    
+    def preview(
+        self,
+        source: HuggingFaceDatasetSource,
+        limit: int = 3,
+    ) -> list[dict[str, Any]]:
+        """Return a small preview without loading the full dataset."""
+
+        if limit <= 0:
+            raise ValueError("limit must be greater than zero")
+        dataset = self.load(source, streaming=True)
+
+        if not hasattr(dataset, "take"):
+            raise TypeError("Streaming dataset does not support take()")
+
+        return list(dataset.take(limit))
