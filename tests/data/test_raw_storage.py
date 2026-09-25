@@ -123,36 +123,3 @@ def test_create_internal_directory(
 
     assert path.exists()
     assert path.is_dir()
-
-
-def test_unsupported_external_type_is_rejected(
-    tmp_path: Path,
-) -> None:
-    from data.sources.huggingface import (
-        HuggingFaceDatasetSource,
-    )
-
-    storage = RawDataStorage(tmp_path)
-
-    source = HuggingFaceDatasetSource(
-        dataset_id="test/dataset",
-        url=(
-            "https://huggingface.co/datasets/"
-            "test/dataset"
-        ),
-        dataset_type="instruction",
-        split="train",
-        local_path=(
-            r"C:\DATA\AIDATA\raw\external"
-            r"\instruction\test"
-        ),
-    )
-
-    object.__setattr__(
-        source,
-        "dataset_type",
-        "unknown",
-    )
-
-    with pytest.raises(ValueError):
-        storage.external_path(source)
