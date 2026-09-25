@@ -49,3 +49,17 @@ def test_huggingface_catalog_dataset_types_are_supported() -> None:
 
     for source in HF_DATASETS.values():
         assert source.dataset_type in supported_types
+
+
+def test_gated_datasets_are_marked() -> None:
+    assert (
+        HF_DATASETS["pretraining_fsnaix"].access
+        == "gated"
+    )
+
+
+def test_vista_has_required_subset() -> None:
+    source = HF_DATASETS["multimodal_vista"]
+
+    assert source.subset == "vi_llava_conversation"
+    assert source.split == "train"
