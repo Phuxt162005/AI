@@ -7,6 +7,7 @@ from .collection_record import (
     ProcessingState,
 )
 from .collector import RawDataCollector
+from .raw_storage import RawDataStorage
 
 __all__ = [
     "CollectionBatch",
@@ -14,4 +15,5 @@ __all__ = [
     "CollectionRecord",
     "ProcessingState",
     "RawDataCollector",
+    "RawDataStorage",
 ]
