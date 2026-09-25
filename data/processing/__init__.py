@@ -30,6 +30,11 @@ from data.processing.tokenizer import (
     SimpleTokenizer,
     Token,
 )
+from data.processing.preprocessor import (
+    DataPreprocessor,
+    PreprocessedRecord,
+    PreprocessingResult,
+)
 
 __all__ = [
     "CleanRecord",
@@ -49,4 +54,7 @@ __all__ = [
     "DataFormatter",
     "FormattedRecord",
     "TextAugmenter",
+    "DataPreprocessor",
+    "PreprocessedRecord",
+    "PreprocessingResult",
 ]
