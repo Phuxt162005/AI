@@ -127,26 +127,18 @@ def test_preprocessed_information_is_preserved() -> None:
     assert stored.metadata["token_count"] == 3
 
 
-def test_metadata_is_copied() -> None:
-    record = make_record(
-        "1",
-        "Xin chào",
-    )
-
+def test_metadata_is_preserved() -> None:
+    record = make_record("1", "Xin chào")
     builder = TrainingDatasetBuilder(
         name="ProjectAI",
         version="1.0.0",
         dataset_type="instruction",
     )
-
     builder.add(record)
-
     stored = builder.build().records[0]
 
-    assert stored.metadata["source_id"] == (
-        "test_source"
-    )
-    assert stored.metadata["preprocessed"] is not True
+    assert stored.metadata["source_id"] == ("test_source")
+    assert "preprocessed" not in stored.metadata
 
 
 def test_all_supported_dataset_types() -> None:
