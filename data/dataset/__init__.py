@@ -12,6 +12,10 @@ from data.dataset.splitter import (
 from data.dataset.training_builder import (
     TrainingDatasetBuilder,
 )
+from data.dataset.dataloader import (
+    DataBatch,
+    DataLoader,
+)
 
 __all__ = [
     "DatasetBuilder",
@@ -20,4 +24,6 @@ __all__ = [
     "DatasetSplitter",
     "TrainingDataset",
     "TrainingDatasetBuilder",
+    "DataBatch",
+    "DataLoader",
 ]
