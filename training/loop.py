@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from self_built.model import Model
@@ -20,15 +20,16 @@ from training.resource_guard import (
 
 @dataclass
 class TrainingHistory:
-    """Training metrics collected during model training."""
+    """Metrics collected during model training and validation."""
 
     losses: list[float]
-
     stopped_safely: bool = False
-
     stop_reason: str | None = None
-
     checkpoint_path: str | None = None
+    validation_losses: list[float] = field(default_factory=list)
+    epoch_metrics: list[dict[str, float | int | bool | None]] = field(
+        default_factory=list
+    )
 
 
 class TrainingLoop:

@@ -4,6 +4,7 @@ from .configuration import (TrainingConfiguration)
 from .loop import (TrainingHistory, TrainingLoop)
 from .checkpoint import (CheckpointManager)
 from .execution import TrainingExecutor
+from .monitoring import EpochMetrics, TrainingMonitor
 
 __all__ = [
     "TrainingConfiguration",
@@ -11,4 +12,6 @@ __all__ = [
     "TrainingLoop",
     "CheckpointManager",
     "TrainingExecutor",
+    "EpochMetrics",
+    "TrainingMonitor",
 ]
