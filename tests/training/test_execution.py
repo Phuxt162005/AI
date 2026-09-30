@@ -142,7 +142,7 @@ def make_executor(
 
     executor = TrainingExecutor(
         training_loop=loop,
-        dataset=dataset or make_dataset(),
+        dataset=dataset if dataset is not None else make_dataset(),
         batch_encoder=encode_batch,
     )
 
