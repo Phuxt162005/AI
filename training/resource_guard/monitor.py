@@ -105,7 +105,7 @@ class ResourceMonitor:
 
     @staticmethod
     def _process_memory() -> float:
-        """Return current process RAM usage."""
+        """Return current process RAM usage on Windows."""
 
         if os.name != "nt":
             raise RuntimeError(
@@ -113,70 +113,44 @@ class ResourceMonitor:
                 "implemented for Windows only."
             )
 
-        class PROCESS_MEMORY_COUNTERS(
-            ctypes.Structure
-        ):
+        from ctypes import wintypes
+
+        class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
             _fields_ = [
-                (
-                    "cb",
-                    ctypes.c_ulong,
-                ),
-                (
-                    "PageFaultCount",
-                    ctypes.c_ulong,
-                ),
-                (
-                    "PeakWorkingSetSize",
-                    ctypes.c_size_t,
-                ),
-                (
-                    "WorkingSetSize",
-                    ctypes.c_size_t,
-                ),
-                (
-                    "QuotaPeakPagedPoolUsage",
-                    ctypes.c_size_t,
-                ),
-                (
-                    "QuotaPagedPoolUsage",
-                    ctypes.c_size_t,
-                ),
-                (
-                    "QuotaPeakNonPagedPoolUsage",
-                    ctypes.c_size_t,
-                ),
-                (
-                    "QuotaNonPagedPoolUsage",
-                    ctypes.c_size_t,
-                ),
-                (
-                    "PagefileUsage",
-                    ctypes.c_size_t,
-                ),
-                (
-                    "PeakPagefileUsage",
-                    ctypes.c_size_t,
-                ),
+                ("cb", wintypes.DWORD),
+                ("PageFaultCount", wintypes.DWORD),
+                ("PeakWorkingSetSize", ctypes.c_size_t),
+                ("WorkingSetSize", ctypes.c_size_t),
+                ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
+                ("PagefileUsage", ctypes.c_size_t),
+                ("PeakPagefileUsage", ctypes.c_size_t),
             ]
 
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        psapi = ctypes.WinDLL("psapi", use_last_error=True)
+        kernel32.GetCurrentProcess.argtypes = []
+        kernel32.GetCurrentProcess.restype = wintypes.HANDLE
+        psapi.GetProcessMemoryInfo.argtypes = [
+            wintypes.HANDLE,
+            ctypes.POINTER(PROCESS_MEMORY_COUNTERS),
+            wintypes.DWORD,
+        ]
+        psapi.GetProcessMemoryInfo.restype = wintypes.BOOL
         counters = PROCESS_MEMORY_COUNTERS()
-
-        counters.cb = ctypes.sizeof(
-            PROCESS_MEMORY_COUNTERS
-        )
-
-        process = ctypes.windll.kernel32.GetCurrentProcess()
-
-        result = ctypes.windll.psapi.GetProcessMemoryInfo(
+        counters.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
+        process = kernel32.GetCurrentProcess()
+        success = psapi.GetProcessMemoryInfo(
             process,
             ctypes.byref(counters),
             counters.cb,
         )
 
-        if not result:
-            raise RuntimeError(
-                "Unable to read process memory usage."
-            )
+        if not success:
+            error_code = ctypes.get_last_error()
+            raise ctypes.WinError(error_code)
 
         return counters.WorkingSetSize / GB
 
