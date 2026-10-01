@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "training_runs": {
+    "run_64b7b5962dd74a108517abc3bf39e4e2": {
+      "run_id": "run_64b7b5962dd74a108517abc3bf39e4e2",
+      "status": "failed",
+      "started_at": "2026-10-01T06:29:51.602036+00:00",
+      "configuration": {
+        "epochs": 100,
+        "learning_rate": 0.03,
+        "seed": 42,
+        "batch_size": 8,
+        "shuffle": true,
+        "drop_last": false,
+        "num_workers": 0,
+        "sequence_length": 128,
+        "gradient_accumulation_steps": 1,
+        "mixed_precision": false,
+        "resource_check_interval": 20,
+        "dataset_name": "linear-regression-smoke-test",
+        "dataset_version": "1.0.0",
+        "dataset_type": "instruction"
+      },
+      "dataset": {
+        "name": "linear-regression-smoke-test",
+        "version": "1.0.0",
+        "dataset_type": "instruction",
+        "train_records": 70,
+        "validation_records": 15,
+        "test_records": 15,
+        "source": "synthetic"
+      },
+      "completed_at": "2026-10-01T06:29:51.618291+00:00",
+      "duration_seconds": 0.016255,
+      "metrics": {},
+      "checkpoint_path": null,
+      "evaluation_path": null,
+      "error": "RuntimeError: Unable to read process memory usage."
+    }
+  },
+  "model_versions": {},
+  "evaluation_results": {}
+}

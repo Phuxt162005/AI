@@ -23,8 +23,8 @@ class TrainingConfiguration:
     sequence_length: int = 128
 
     # Optimization
-    gradient_accumulation_steps: int = 8
-    mixed_precision: bool = True
+    gradient_accumulation_steps: int = 1
+    mixed_precision: bool = False
 
     # Resource monitoring
     resource_check_interval: int = 20
@@ -89,6 +89,21 @@ class TrainingConfiguration:
             and not self.dataset_version.strip()
         ):
             raise ValueError("dataset_version must not be empty.")
+        
+        if self.gradient_accumulation_steps != 1:
+            raise NotImplementedError(
+                "Gradient accumulation is not supported yet. "
+                "Set gradient_accumulation_steps=1."
+            )
+
+        if self.mixed_precision:
+            raise NotImplementedError("Mixed precision is not supported by the self-built Tensor engine.")
+
+        if self.num_workers != 0:
+            raise NotImplementedError(
+                "Parallel DataLoader workers are not supported yet. "
+                "Set num_workers=0."
+            )
 
     def to_dict(self) -> dict:
         """Convert configuration to a serializable dictionary."""

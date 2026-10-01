@@ -19,6 +19,6 @@ __all__ = [
     "TrainingRegistry",
     "TrainingRun",
     "ModelVersion",
-    "EvaluationRecord"
+    "EvaluationRecord",
     "ModelLoader",
 ]

@@ -300,8 +300,8 @@ class TrainingExecutor:
                 ):
                     early_stopped = True
                     break
-
-        return TrainingHistory(
+                
+        history = TrainingHistory(
             losses=losses,
             stopped_safely=False,
             checkpoint_path=best_checkpoint_path,
@@ -315,3 +315,28 @@ class TrainingExecutor:
             best_epoch=best_epoch,
             early_stopped=early_stopped,
         )
+
+        if best_checkpoint_path is not None:
+            self._restore_best_model(best_checkpoint_path)
+
+        return history
+        
+    def _restore_best_model(self, checkpoint_path: str) -> None:
+        """Restore best checkpoint parameters into the active model."""
+
+        checkpoint = self.training_loop.checkpoint_manager.load(checkpoint_path)
+        best_model = checkpoint.get("model")
+        if best_model is None:
+            raise ValueError("Best checkpoint does not contain a model.")
+        current_parameters = self.training_loop.model.parameters()
+        best_parameters = best_model.parameters()
+
+        if len(current_parameters) != len(best_parameters):
+            raise ValueError("Best checkpoint model parameter count does not match.")
+
+        for current, best in zip(current_parameters, best_parameters):
+            if current.shape != best.shape:
+                raise ValueError("Best checkpoint parameter shape does not match.")
+
+            current._data[:] = best._data
+        self.training_loop.model.eval()

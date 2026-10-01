@@ -46,53 +46,20 @@ class TrainingLoop:
         configuration: TrainingConfiguration | None = None,
     ) -> None:
         self.model = model
-
-        self.configuration = (
-            configuration
-            or TrainingConfiguration()
-        )
-
+        self.configuration = (configuration or TrainingConfiguration())
         self.configuration.validate()
+        if hasattr(self.model.optimizer, "learning_rate"):
+            self.model.optimizer.learning_rate = (self.configuration.learning_rate)
+        self.resource_controller = (resource_controller or ResourceController(limits=ResourceLimits()))
+        self.checkpoint_manager = (checkpoint_manager or CheckpointManager())
 
-        self.resource_controller = (
-            resource_controller
-            or ResourceController(
-                limits=ResourceLimits()
-            )
-        )
-
-        self.checkpoint_manager = (
-            checkpoint_manager
-            or CheckpointManager()
-        )
-
-    def train_batch(
-        self,
-        inputs: Tensor,
-        targets: Tensor,
-    ) -> float:
+    def train_batch(self, inputs: Tensor, targets: Tensor) -> float:
         self.model.train()
-
-        predictions = self.model.forward(
-            inputs
-        )
-
-        loss_value = (
-            self.model.loss.forward(
-                predictions,
-                targets,
-            )
-        )
-
+        predictions = self.model.forward(inputs)
+        loss_value = (self.model.loss.forward(predictions, targets))
         gradient = self.model.loss.backward()
-
-        self.model.network.backward(
-            gradient
-        )
-
-        self.model.optimizer.step(
-            self.model.network.gradients()
-        )
+        self.model.network.backward(gradient)
+        self.model.optimizer.step(self.model.network.gradients())
 
         return loss_value
 
