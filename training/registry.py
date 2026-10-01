@@ -201,7 +201,18 @@ class TrainingRegistry:
         """Register a model version linked to a completed training run."""
 
         _validate_text(model_version, "model_version")
-        _validate_text(str(checkpoint_path), "checkpoint_path")
+
+        if checkpoint_path is None:
+            raise ValueError("checkpoint_path must be a non-empty string or Path.")
+
+        checkpoint_path_text = str(checkpoint_path)
+        _validate_text(checkpoint_path_text, "checkpoint_path")
+
+        if metrics is not None and not isinstance(metrics, dict):
+            raise TypeError("metrics must be a dictionary or None.")
+
+        if description is not None and not isinstance(description, str):
+            raise TypeError("description must be a string or None.")
 
         data = self._read()
 
@@ -219,10 +230,11 @@ class TrainingRegistry:
             model_version=model_version,
             run_id=run_id,
             created_at=_utc_now(),
-            checkpoint_path=str(checkpoint_path),
-            metrics=metrics or {},
+            checkpoint_path=checkpoint_path_text,
+            metrics={} if metrics is None else metrics,
             description=description,
         )
+
         data["model_versions"][model_version] = asdict(model)
         self._write(data)
         return model

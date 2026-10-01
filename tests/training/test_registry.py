@@ -122,3 +122,111 @@ def test_registry_file_contains_valid_json(tmp_path):
 
     assert data["schema_version"] == 1
     assert len(data["training_runs"]) == 1
+    
+@pytest.mark.parametrize("checkpoint_path", [None, "", "   "])
+def test_register_model_rejects_invalid_checkpoint_path(
+    tmp_path,
+    checkpoint_path,
+):
+    registry = TrainingRegistry(tmp_path / "registry.json")
+    run, _ = create_completed_run(registry)
+
+    with pytest.raises(ValueError):
+        registry.register_model(
+            model_version="0.1.0",
+            run_id=run.run_id,
+            checkpoint_path=checkpoint_path,
+        )
+
+
+@pytest.mark.parametrize("metrics", ["invalid", 123, ["accuracy", 0.9]])
+def test_register_model_rejects_non_dictionary_metrics(
+    tmp_path,
+    metrics,
+):
+    registry = TrainingRegistry(tmp_path / "registry.json")
+    run, _ = create_completed_run(registry)
+
+    with pytest.raises(TypeError):
+        registry.register_model(
+            model_version="0.1.0",
+            run_id=run.run_id,
+            checkpoint_path="model.pkl",
+            metrics=metrics,
+        )
+
+
+def test_register_model_accepts_none_metrics_as_empty_dictionary(tmp_path):
+    registry = TrainingRegistry(tmp_path / "registry.json")
+    run, _ = create_completed_run(registry)
+
+    model = registry.register_model(
+        model_version="0.1.0",
+        run_id=run.run_id,
+        checkpoint_path="model.pkl",
+        metrics=None,
+    )
+
+    assert model.metrics == {}
+
+
+def test_register_model_rejects_non_string_description(tmp_path):
+    registry = TrainingRegistry(tmp_path / "registry.json")
+    run, _ = create_completed_run(registry)
+
+    with pytest.raises(TypeError):
+        registry.register_model(
+            model_version="0.1.0",
+            run_id=run.run_id,
+            checkpoint_path="model.pkl",
+            description=123,
+        )
+
+
+def test_get_run_rejects_unknown_run_id(tmp_path):
+    registry = TrainingRegistry(tmp_path / "registry.json")
+
+    with pytest.raises(KeyError):
+        registry.get_run("run_does_not_exist")
+
+
+def test_get_model_rejects_unknown_model_version(tmp_path):
+    registry = TrainingRegistry(tmp_path / "registry.json")
+
+    with pytest.raises(KeyError):
+        registry.get_model("model_does_not_exist")
+
+
+def test_list_runs_returns_registered_runs(tmp_path):
+    registry = TrainingRegistry(tmp_path / "registry.json")
+
+    first = registry.create_run({}, {"name": "first"})
+    second = registry.create_run({}, {"name": "second"})
+
+    runs = registry.list_runs()
+    run_ids = {run.run_id for run in runs}
+
+    assert len(runs) == 2
+    assert run_ids == {first.run_id, second.run_id}
+
+
+def test_list_models_returns_registered_models(tmp_path):
+    registry = TrainingRegistry(tmp_path / "registry.json")
+    run, _ = create_completed_run(registry)
+
+    first = registry.register_model(
+        "0.1.0",
+        run.run_id,
+        "model_1.pkl",
+    )
+    second = registry.register_model(
+        "0.2.0",
+        run.run_id,
+        "model_2.pkl",
+    )
+
+    models = registry.list_models()
+    model_versions = {model.model_version for model in models}
+
+    assert len(models) == 2
+    assert model_versions == {first.model_version, second.model_version}
