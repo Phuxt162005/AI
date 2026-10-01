@@ -241,58 +241,65 @@ class TrainingExecutor:
                 )
 
             training_loss = (sum(epoch_training_losses) / len(epoch_training_losses))
-
-        validation_loss = None
-        if validation_loader is not None:
-            validation_loss = self._evaluate_validation(validation_loader)
-            validation_losses.append(validation_loss)
-
-        metrics = self.monitor.record_epoch(
-            epoch=epoch + 1,
-            training_loss=training_loss,
-            validation_loss=validation_loss,
-        )
-        epoch_metrics.append(
-            {
-                "epoch": metrics.epoch,
-                "training_loss": metrics.training_loss,
-                "validation_loss": metrics.validation_loss,
-                "generalization_gap": metrics.generalization_gap,
-                "possible_overfitting": metrics.possible_overfitting,
-            }
-        )
-
-        if validation_loss is not None:
-            improved = (best_epoch is None or validation_loss < best_validation_loss - self.min_delta)
-            if improved:
-                best_validation_loss = validation_loss
-                best_epoch = epoch + 1
-                epochs_without_improvement = 0
-                checkpoint_state = {
-                    "model": self.training_loop.model,
-                    "optimizer": self.training_loop.model.optimizer,
-                    "epoch": epoch + 1,
-                    "step": global_step,
-                    "validation_loss": validation_loss,
-                    "configuration": config,
-                    "checkpoint_type": "best_model",
+            validation_loss = None
+            if validation_loader is not None:
+                validation_loss = self._evaluate_validation(validation_loader)
+                validation_losses.append(validation_loss)
+            metrics = self.monitor.record_epoch(
+                epoch=epoch + 1,
+                training_loss=training_loss,
+                validation_loss=validation_loss,
+            )
+            epoch_metrics.append(
+                {
+                    "epoch": metrics.epoch,
+                    "training_loss": metrics.training_loss,
+                    "validation_loss": metrics.validation_loss,
+                    "generalization_gap": metrics.generalization_gap,
+                    "possible_overfitting": metrics.possible_overfitting,
                 }
-                checkpoint_path = (
-                    self.training_loop.checkpoint_manager.save(
-                        checkpoint_state,
-                        filename="best_model.pkl",
-                    )
-                )
-                best_checkpoint_path = str(checkpoint_path)
-            else:
-                epochs_without_improvement += 1
+            )
 
-            if (
-                self.early_stopping_patience is not None
-                and epochs_without_improvement
-                >= self.early_stopping_patience
-            ):
-                early_stopped = True
+            if validation_loss is not None:
+                improved = (
+                    best_epoch is None
+                    or validation_loss
+                    < best_validation_loss - self.min_delta
+                )
+
+                if improved:
+                    best_validation_loss = validation_loss
+                    best_epoch = epoch + 1
+                    epochs_without_improvement = 0
+
+                    checkpoint_state = {
+                        "model": self.training_loop.model,
+                        "optimizer": self.training_loop.model.optimizer,
+                        "epoch": epoch + 1,
+                        "step": global_step,
+                        "validation_loss": validation_loss,
+                        "configuration": config,
+                        "checkpoint_type": "best_model",
+                    }
+
+                    checkpoint_path = (
+                        self.training_loop.checkpoint_manager.save(
+                            checkpoint_state,
+                            filename="best_model.pkl",
+                        )
+                    )
+                    best_checkpoint_path = str(checkpoint_path)
+
+                else:
+                    epochs_without_improvement += 1
+
+                if (
+                    self.early_stopping_patience is not None
+                    and epochs_without_improvement
+                    >= self.early_stopping_patience
+                ):
+                    early_stopped = True
+                    break
 
         return TrainingHistory(
             losses=losses,
