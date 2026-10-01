@@ -230,3 +230,113 @@ def test_list_models_returns_registered_models(tmp_path):
 
     assert len(models) == 2
     assert model_versions == {first.model_version, second.model_version}
+    
+def test_record_evaluation_links_model_and_training_run(tmp_path):
+    registry = TrainingRegistry(tmp_path / "registry.json")
+    run, _ = create_completed_run(registry)
+
+    model = registry.register_model(
+        model_version="0.1.0",
+        run_id=run.run_id,
+        checkpoint_path="checkpoints/model.pkl",
+    )
+
+    evaluation = registry.record_evaluation(
+        model_version=model.model_version,
+        result={
+            "dataset_name": "evaluation-test",
+            "dataset_version": "1.0",
+            "evaluated_records": 20,
+            "loss": 0.25,
+            "mae": 0.4,
+            "mse": 0.25,
+        },
+    )
+
+    assert evaluation.model_version == model.model_version
+    assert evaluation.run_id == run.run_id
+    assert evaluation.result["loss"] == 0.25
+
+
+def test_get_evaluation_returns_persisted_result(tmp_path):
+    registry = TrainingRegistry(tmp_path / "registry.json")
+    run, _ = create_completed_run(registry)
+
+    model = registry.register_model(
+        "0.1.0",
+        run.run_id,
+        "model.pkl",
+    )
+
+    evaluation = registry.record_evaluation(
+        model_version=model.model_version,
+        result={"accuracy": 0.9},
+    )
+
+    loaded = registry.get_evaluation(evaluation.evaluation_id)
+
+    assert loaded.evaluation_id == evaluation.evaluation_id
+    assert loaded.model_version == "0.1.0"
+    assert loaded.result["accuracy"] == 0.9
+
+
+def test_record_evaluation_rejects_unknown_model_version(tmp_path):
+    registry = TrainingRegistry(tmp_path / "registry.json")
+
+    with pytest.raises(KeyError):
+        registry.record_evaluation(
+            model_version="unknown",
+            result={"loss": 0.5},
+        )
+
+
+def test_record_evaluation_rejects_non_dictionary_result(tmp_path):
+    registry = TrainingRegistry(tmp_path / "registry.json")
+
+    with pytest.raises(TypeError):
+        registry.record_evaluation(
+            model_version="0.1.0",
+            result="invalid",
+        )
+
+
+def test_list_evaluations_can_filter_by_model_version(tmp_path):
+    registry = TrainingRegistry(tmp_path / "registry.json")
+    run, _ = create_completed_run(registry)
+
+    model_1 = registry.register_model("0.1.0", run.run_id, "model_1.pkl")
+    model_2 = registry.register_model("0.2.0", run.run_id, "model_2.pkl")
+
+    registry.record_evaluation(
+        model_version=model_1.model_version,
+        result={"loss": 0.5},
+    )
+    registry.record_evaluation(
+        model_version=model_2.model_version,
+        result={"loss": 0.3},
+    )
+
+    evaluations = registry.list_evaluations(
+        model_version=model_1.model_version,
+    )
+
+    assert len(evaluations) == 1
+    assert evaluations[0].model_version == "0.1.0"
+
+
+def test_list_evaluations_returns_all_results(tmp_path):
+    registry = TrainingRegistry(tmp_path / "registry.json")
+    run, _ = create_completed_run(registry)
+
+    model = registry.register_model("0.1.0", run.run_id, "model.pkl")
+
+    registry.record_evaluation(
+        model_version=model.model_version,
+        result={"loss": 0.5},
+    )
+    registry.record_evaluation(
+        model_version=model.model_version,
+        result={"loss": 0.3},
+    )
+
+    assert len(registry.list_evaluations()) == 2

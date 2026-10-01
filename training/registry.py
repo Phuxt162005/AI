@@ -51,6 +51,16 @@ class ModelVersion:
     checkpoint_path: str
     metrics: dict[str, Any] = field(default_factory=dict)
     description: str | None = None
+    
+@dataclass
+class EvaluationRecord:
+    """Metadata describing an evaluation result for a model version."""
+
+    evaluation_id: str
+    model_version: str
+    run_id: str
+    created_at: str
+    result: dict[str, Any]
 
 class TrainingRegistry:
     """Persist training-run and model-version metadata in JSON."""
@@ -58,12 +68,13 @@ class TrainingRegistry:
     def __init__(self, path: str | Path = "training/registry.json") -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-
+        
         if not self.path.exists():
             self._write({
                 "schema_version": 1,
                 "training_runs": {},
                 "model_versions": {},
+                "evaluation_results": {},
             })
 
     def _read(self) -> dict[str, Any]:
@@ -76,6 +87,7 @@ class TrainingRegistry:
         data.setdefault("schema_version", 1)
         data.setdefault("training_runs", {})
         data.setdefault("model_versions", {})
+        data.setdefault("evaluation_results", {})
         return data
 
     def _write(self, data: dict[str, Any]) -> None:
@@ -268,3 +280,59 @@ class TrainingRegistry:
         records = self._read()["model_versions"].values()
         models = [ModelVersion(**record) for record in records]
         return sorted(models, key=lambda model: model.created_at)
+    
+    def record_evaluation(
+        self,
+        model_version: str,
+        result: dict[str, Any],
+    ) -> EvaluationRecord:
+        """Persist an evaluation result linked to a registered model version."""
+
+        _validate_text(model_version, "model_version")
+
+        if not isinstance(result, dict):
+            raise TypeError("result must be a dictionary.")
+
+        data = self._read()
+
+        model = data["model_versions"].get(model_version)
+        if model is None:
+            raise KeyError(f"Unknown model version: {model_version}")
+
+        record = EvaluationRecord(
+            evaluation_id=_new_id("evaluation"),
+            model_version=model_version,
+            run_id=model["run_id"],
+            created_at=_utc_now(),
+            result=result,
+        )
+
+        data["evaluation_results"][record.evaluation_id] = asdict(record)
+        self._write(data)
+
+        return record
+
+    def get_evaluation(self, evaluation_id: str) -> EvaluationRecord:
+        """Retrieve one evaluation result."""
+
+        record = self._read()["evaluation_results"].get(evaluation_id)
+
+        if record is None:
+            raise KeyError(f"Unknown evaluation: {evaluation_id}")
+
+        return EvaluationRecord(**record)
+
+    def list_evaluations(self, model_version: str | None = None) -> list[EvaluationRecord]:
+        """List evaluation results, optionally filtered by model version."""
+
+        records = self._read()["evaluation_results"].values()
+        evaluations = [EvaluationRecord(**record) for record in records]
+
+        if model_version is not None:
+            evaluations = [
+                evaluation
+                for evaluation in evaluations
+                if evaluation.model_version == model_version
+            ]
+
+        return sorted(evaluations, key=lambda evaluation: evaluation.created_at)
