@@ -30,6 +30,9 @@ class TrainingHistory:
     epoch_metrics: list[dict[str, float | int | bool | None]] = field(
         default_factory=list
     )
+    best_validation_loss: float | None = None
+    best_epoch: int | None = None
+    early_stopped: bool = False
 
 
 class TrainingLoop:

@@ -24,6 +24,8 @@ class TrainingExecutor:
         batch_encoder: BatchEncoder,
         validation_dataset: TrainingDataset | None = None,
         validation_encoder: BatchEncoder | None = None,
+        early_stopping_patience: int | None = None,
+        min_delta: float = 0.0,
     ) -> None:
         if not callable(batch_encoder):
             raise TypeError("batch_encoder must be callable.")
@@ -36,14 +38,24 @@ class TrainingExecutor:
 
         if validation_encoder is not None and not callable(validation_encoder):
             raise TypeError("validation_encoder must be callable.")
+        
+        if early_stopping_patience is not None:
+            if early_stopping_patience < 1:
+                raise ValueError("early_stopping_patience must be at least 1.")
+            if validation_dataset is None:
+                raise ValueError("Early stopping requires a validation dataset.")
 
+        if min_delta < 0:
+            raise ValueError("min_delta must not be negative.")
+
+        self.early_stopping_patience = early_stopping_patience
+        self.min_delta = min_delta
         self.training_loop = training_loop
         self.dataset = dataset
         self.batch_encoder = batch_encoder
         self.validation_dataset = validation_dataset
         self.validation_encoder = validation_encoder
         self.monitor = TrainingMonitor()
-
         config = training_loop.configuration
 
         for configured, actual, field_name in (
@@ -62,37 +74,28 @@ class TrainingExecutor:
                 raise ValueError("Validation dataset must not be empty.")
 
             if validation_dataset.dataset_type != dataset.dataset_type:
-                raise ValueError(
-                    "Training and validation dataset types must match."
-                )
+                raise ValueError("Training and validation dataset types must match.")
 
     def _evaluate_validation(self, loader: DataLoader) -> float:
         """Evaluate validation batches without optimizer updates."""
 
         model = self.training_loop.model
         model.eval()
-
         total_loss = 0.0
         total_records = 0
 
         assert self.validation_encoder is not None
-
         for batch in loader:
             inputs, targets = self.validation_encoder(batch)
 
             if not isinstance(inputs, Tensor):
-                raise TypeError(
-                    "validation_encoder must return Tensor inputs."
-                )
+                raise TypeError("validation_encoder must return Tensor inputs.")
 
             if not isinstance(targets, Tensor):
-                raise TypeError(
-                    "validation_encoder must return Tensor targets."
-                )
+                raise TypeError("validation_encoder must return Tensor targets.")
 
             predictions = model.predict(inputs)
             loss = model.loss.forward(predictions, targets)
-
             batch_size = len(batch)
             total_loss += float(loss) * batch_size
             total_records += batch_size
@@ -155,6 +158,11 @@ class TrainingExecutor:
         validation_losses: list[float] = []
         epoch_metrics: list[dict[str, float | int | bool | None]] = []
         global_step = 0
+        best_validation_loss = float("inf")
+        best_epoch: int | None = None
+        epochs_without_improvement = 0
+        best_checkpoint_path: str | None = None
+        early_stopped = False
 
         for epoch in range(config.epochs):
             epoch_training_losses: list[float] = []
@@ -176,22 +184,15 @@ class TrainingExecutor:
                         validation_losses=validation_losses,
                         epoch_metrics=epoch_metrics,
                     )
-
                 inputs, targets = self.batch_encoder(batch)
 
                 if not isinstance(inputs, Tensor):
-                    raise TypeError(
-                        "batch_encoder must return Tensor inputs."
-                    )
+                    raise TypeError("batch_encoder must return Tensor inputs.")
 
                 if not isinstance(targets, Tensor):
-                    raise TypeError(
-                        "batch_encoder must return Tensor targets."
-                    )
+                    raise TypeError("batch_encoder must return Tensor targets.")
 
-                loss = float(
-                    self.training_loop.train_batch(inputs, targets)
-                )
+                loss = float(self.training_loop.train_batch(inputs, targets))
                 losses.append(loss)
                 epoch_training_losses.append(loss)
                 global_step += 1
@@ -216,9 +217,7 @@ class TrainingExecutor:
                         return TrainingHistory(
                             losses=losses,
                             stopped_safely=True,
-                            stop_reason=(
-                                "Resource limit exceeded during training."
-                            ),
+                            stop_reason=("Resource limit exceeded during training."),
                             checkpoint_path=str(checkpoint),
                             validation_losses=validation_losses,
                             epoch_metrics=epoch_metrics,
@@ -235,44 +234,77 @@ class TrainingExecutor:
                 return TrainingHistory(
                     losses=losses,
                     stopped_safely=True,
-                    stop_reason=(
-                        "Resource limit exceeded at epoch end."
-                    ),
+                    stop_reason=("Resource limit exceeded at epoch end."),
                     checkpoint_path=str(checkpoint),
                     validation_losses=validation_losses,
                     epoch_metrics=epoch_metrics,
                 )
 
-            training_loss = (
-                sum(epoch_training_losses) / len(epoch_training_losses)
-            )
+            training_loss = (sum(epoch_training_losses) / len(epoch_training_losses))
 
-            validation_loss = None
-            if validation_loader is not None:
-                validation_loss = self._evaluate_validation(
-                    validation_loader
-                )
-                validation_losses.append(validation_loss)
+        validation_loss = None
+        if validation_loader is not None:
+            validation_loss = self._evaluate_validation(validation_loader)
+            validation_losses.append(validation_loss)
 
-            metrics = self.monitor.record_epoch(
-                epoch=epoch + 1,
-                training_loss=training_loss,
-                validation_loss=validation_loss,
-            )
+        metrics = self.monitor.record_epoch(
+            epoch=epoch + 1,
+            training_loss=training_loss,
+            validation_loss=validation_loss,
+        )
+        epoch_metrics.append(
+            {
+                "epoch": metrics.epoch,
+                "training_loss": metrics.training_loss,
+                "validation_loss": metrics.validation_loss,
+                "generalization_gap": metrics.generalization_gap,
+                "possible_overfitting": metrics.possible_overfitting,
+            }
+        )
 
-            epoch_metrics.append(
-                {
-                    "epoch": metrics.epoch,
-                    "training_loss": metrics.training_loss,
-                    "validation_loss": metrics.validation_loss,
-                    "generalization_gap": metrics.generalization_gap,
-                    "possible_overfitting": metrics.possible_overfitting,
+        if validation_loss is not None:
+            improved = (best_epoch is None or validation_loss < best_validation_loss - self.min_delta)
+            if improved:
+                best_validation_loss = validation_loss
+                best_epoch = epoch + 1
+                epochs_without_improvement = 0
+                checkpoint_state = {
+                    "model": self.training_loop.model,
+                    "optimizer": self.training_loop.model.optimizer,
+                    "epoch": epoch + 1,
+                    "step": global_step,
+                    "validation_loss": validation_loss,
+                    "configuration": config,
+                    "checkpoint_type": "best_model",
                 }
-            )
+                checkpoint_path = (
+                    self.training_loop.checkpoint_manager.save(
+                        checkpoint_state,
+                        filename="best_model.pkl",
+                    )
+                )
+                best_checkpoint_path = str(checkpoint_path)
+            else:
+                epochs_without_improvement += 1
+
+            if (
+                self.early_stopping_patience is not None
+                and epochs_without_improvement
+                >= self.early_stopping_patience
+            ):
+                early_stopped = True
 
         return TrainingHistory(
             losses=losses,
             stopped_safely=False,
+            checkpoint_path=best_checkpoint_path,
             validation_losses=validation_losses,
             epoch_metrics=epoch_metrics,
+            best_validation_loss=(
+                best_validation_loss
+                if best_epoch is not None
+                else None
+            ),
+            best_epoch=best_epoch,
+            early_stopped=early_stopped,
         )
