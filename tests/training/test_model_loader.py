@@ -9,17 +9,19 @@ from training.checkpoint import CheckpointManager
 from training.model_loader import ModelLoader
 from training.registry import TrainingRegistry
 
-
 def make_model():
     network = Sequential(
-        Linear(input_size=1, output_size=1),
+        Linear(in_features=1, out_features=1),
     )
+
     return Model(
         network=network,
         loss=MSELoss(),
-        optimizer=SGD(learning_rate=0.01),
+        optimizer=SGD(
+            parameters=network.parameters(),
+            learning_rate=0.01,
+        ),
     )
-
 
 def make_registered_model(tmp_path):
     registry = TrainingRegistry(tmp_path / "registry.json")
