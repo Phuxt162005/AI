@@ -6,6 +6,7 @@ from .checkpoint import (CheckpointManager)
 from .execution import TrainingExecutor
 from .monitoring import EpochMetrics, TrainingMonitor
 from .registry import TrainingRegistry, TrainingRun, ModelVersion, EvaluationRecord
+from .model_loader import ModelLoader
 
 __all__ = [
     "TrainingConfiguration",
@@ -19,4 +20,5 @@ __all__ = [
     "TrainingRun",
     "ModelVersion",
     "EvaluationRecord"
+    "ModelLoader",
 ]
