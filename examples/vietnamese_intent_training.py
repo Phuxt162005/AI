@@ -393,8 +393,30 @@ def run_training(output_dir: str | Path = "artifacts/vietnamese_intent"):
             "predictions": test_metrics["predictions"],
         }
 
-        with (output_dir / "metrics.json").open("w", encoding="utf-8") as file:
-            json.dump(result, file, ensure_ascii=False, indent=2)
+        evaluation_path = output_dir / "evaluation.json"
+        metrics_path = output_dir / "metrics.json"
+
+        evaluation_result = {
+            "task": "intent_classification",
+            "dataset": {
+                "name": test_dataset.name,
+                "version": test_dataset.version,
+                "type": test_dataset.dataset_type,
+                "records": len(test_dataset),
+                "language": "vi",
+            },
+            "metrics": {
+                "accuracy": test_metrics["accuracy"],
+                "correct": test_metrics["correct"],
+                "total": test_metrics["total"],
+                "macro_precision": test_metrics["macro_precision"],
+                "macro_recall": test_metrics["macro_recall"],
+                "macro_f1": test_metrics["macro_f1"],
+                "per_class": test_metrics["per_class_metrics"],
+            },
+            "confusion_matrix": test_metrics["confusion_matrix"],
+            "predictions": test_metrics["predictions"],
+        }
 
         registry.complete_run(
             run_id=run.run_id,
@@ -402,8 +424,13 @@ def run_training(output_dir: str | Path = "artifacts/vietnamese_intent"):
                 "final_training_loss": final_loss,
                 "best_validation_loss": history.best_validation_loss,
                 "test_accuracy": test_metrics["accuracy"],
+                "test_macro_precision": test_metrics["macro_precision"],
+                "test_macro_recall": test_metrics["macro_recall"],
+                "test_macro_f1": test_metrics["macro_f1"],
+                "test_records": test_metrics["total"],
             },
             checkpoint_path=history.checkpoint_path,
+            evaluation_path=evaluation_path,
         )
 
         model_version = f"vi-intent-{run.run_id}"
@@ -411,19 +438,39 @@ def run_training(output_dir: str | Path = "artifacts/vietnamese_intent"):
             model_version=model_version,
             run_id=run.run_id,
             checkpoint_path=history.checkpoint_path,
-            metrics={"test_accuracy": test_metrics["accuracy"]},
-            description="Vietnamese intent classifier trained on project-authored data",
+            metrics={
+                "test_accuracy": test_metrics["accuracy"],
+                "test_macro_f1": test_metrics["macro_f1"],
+            },
+            description=(
+                "Vietnamese intent classifier trained on "
+                "project-authored data"
+            ),
         )
 
-        registry.record_evaluation(
+        evaluation_record = registry.record_evaluation(
             model_version=model_version,
-            result={
-                "task": "intent_classification",
-                "accuracy": test_metrics["accuracy"],
-                "correct": test_metrics["correct"],
-                "total": test_metrics["total"],
-            },
+            result=evaluation_result,
         )
+
+        evaluation_result["evaluation_id"] = evaluation_record.evaluation_id
+        evaluation_result["model_version"] = model_version
+        evaluation_result["run_id"] = run.run_id
+
+        with evaluation_path.open("w", encoding="utf-8") as file:
+            json.dump(
+                evaluation_result,
+                file,
+                ensure_ascii=False,
+                indent=2,
+            )
+
+        result["model_version"] = model_version
+        result["evaluation_id"] = evaluation_record.evaluation_id
+        result["evaluation_path"] = str(evaluation_path)
+
+        with metrics_path.open("w", encoding="utf-8") as file:
+            json.dump(result, file, ensure_ascii=False, indent=2)
 
         return result
 

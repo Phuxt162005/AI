@@ -1,25 +1,58 @@
 {
-  "run_id": "run_ac1b92375b144a9882914a61174332e4",
-  "task": "Vietnamese intent classification",
-  "labels": [
-    "capability",
-    "goodbye",
-    "greeting",
-    "thanks",
-    "time",
-    "weather"
-  ],
-  "vocabulary_size": 79,
-  "train_records": 36,
-  "validation_records": 12,
-  "test_records": 15,
-  "epochs_completed": 120,
-  "first_training_loss": 1.80826376219694,
-  "final_training_loss": 0.04609935166584144,
-  "best_validation_loss": 0.457371757932942,
-  "test_accuracy": 0.8666666666666667,
-  "test_correct": 13,
-  "test_total": 15,
+  "task": "intent_classification",
+  "dataset": {
+    "name": "vi-intent-test",
+    "version": "1.0.0",
+    "type": "instruction",
+    "records": 15,
+    "language": "vi"
+  },
+  "metrics": {
+    "accuracy": 0.8666666666666667,
+    "correct": 13,
+    "total": 15,
+    "macro_precision": 0.9027777777777778,
+    "macro_recall": 0.8888888888888888,
+    "macro_f1": 0.8595238095238096,
+    "per_class": {
+      "capability": {
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "f1_score": 0.8,
+        "support": 2
+      },
+      "goodbye": {
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1_score": 0.8571428571428571,
+        "support": 3
+      },
+      "greeting": {
+        "precision": 1.0,
+        "recall": 0.3333333333333333,
+        "f1_score": 0.5,
+        "support": 3
+      },
+      "thanks": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 3
+      },
+      "time": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 2
+      },
+      "weather": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 2
+      }
+    }
+  },
   "confusion_matrix": {
     "capability": {
       "capability": 2,
@@ -70,48 +103,6 @@
       "weather": 2
     }
   },
-  "per_class_metrics": {
-    "capability": {
-      "precision": 0.6666666666666666,
-      "recall": 1.0,
-      "f1_score": 0.8,
-      "support": 2
-    },
-    "goodbye": {
-      "precision": 0.75,
-      "recall": 1.0,
-      "f1_score": 0.8571428571428571,
-      "support": 3
-    },
-    "greeting": {
-      "precision": 1.0,
-      "recall": 0.3333333333333333,
-      "f1_score": 0.5,
-      "support": 3
-    },
-    "thanks": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "support": 3
-    },
-    "time": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "support": 2
-    },
-    "weather": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "support": 2
-    }
-  },
-  "macro_precision": 0.9027777777777778,
-  "macro_recall": 0.8888888888888888,
-  "macro_f1": 0.8595238095238096,
-  "checkpoint_path": "artifacts\\vietnamese_intent\\checkpoints\\best_model.pkl",
   "predictions": [
     {
       "text": "Bạn khỏe không",
@@ -204,7 +195,7 @@
       "correct": true
     }
   ],
-  "model_version": "vi-intent-run_ac1b92375b144a9882914a61174332e4",
   "evaluation_id": "evaluation_7dee3cee42934752abb296cc5b2af3fd",
-  "evaluation_path": "artifacts\\vietnamese_intent\\evaluation.json"
+  "model_version": "vi-intent-run_ac1b92375b144a9882914a61174332e4",
+  "run_id": "run_ac1b92375b144a9882914a61174332e4"
 }

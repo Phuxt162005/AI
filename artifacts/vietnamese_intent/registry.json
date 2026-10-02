@@ -40,6 +40,90 @@
       "checkpoint_path": "artifacts\\vietnamese_intent\\checkpoints\\best_model.pkl",
       "evaluation_path": null,
       "error": null
+    },
+    "run_40e9eb86d5974015a12e96699ec3d768": {
+      "run_id": "run_40e9eb86d5974015a12e96699ec3d768",
+      "status": "completed",
+      "started_at": "2026-10-02T00:59:09.537076+00:00",
+      "configuration": {
+        "epochs": 120,
+        "learning_rate": 0.05,
+        "seed": 42,
+        "batch_size": 8,
+        "shuffle": true,
+        "drop_last": false,
+        "num_workers": 0,
+        "sequence_length": 128,
+        "gradient_accumulation_steps": 1,
+        "mixed_precision": false,
+        "resource_check_interval": 20,
+        "dataset_name": "vi-intent-train",
+        "dataset_version": "1.0.0",
+        "dataset_type": "instruction"
+      },
+      "dataset": {
+        "name": "vi-intent-train",
+        "version": "1.0.0",
+        "dataset_type": "instruction",
+        "train_records": 36,
+        "validation_records": 12,
+        "test_records": 15,
+        "source": "project_authored_small_dataset"
+      },
+      "completed_at": "2026-10-02T01:00:48.481239+00:00",
+      "duration_seconds": 98.944163,
+      "metrics": {
+        "final_training_loss": 0.04609935166584144,
+        "best_validation_loss": 0.457371757932942,
+        "test_accuracy": 0.8666666666666667
+      },
+      "checkpoint_path": "artifacts\\vietnamese_intent\\checkpoints\\best_model.pkl",
+      "evaluation_path": null,
+      "error": null
+    },
+    "run_ac1b92375b144a9882914a61174332e4": {
+      "run_id": "run_ac1b92375b144a9882914a61174332e4",
+      "status": "completed",
+      "started_at": "2026-10-02T01:22:45.259087+00:00",
+      "configuration": {
+        "epochs": 120,
+        "learning_rate": 0.05,
+        "seed": 42,
+        "batch_size": 8,
+        "shuffle": true,
+        "drop_last": false,
+        "num_workers": 0,
+        "sequence_length": 128,
+        "gradient_accumulation_steps": 1,
+        "mixed_precision": false,
+        "resource_check_interval": 20,
+        "dataset_name": "vi-intent-train",
+        "dataset_version": "1.0.0",
+        "dataset_type": "instruction"
+      },
+      "dataset": {
+        "name": "vi-intent-train",
+        "version": "1.0.0",
+        "dataset_type": "instruction",
+        "train_records": 36,
+        "validation_records": 12,
+        "test_records": 15,
+        "source": "project_authored_small_dataset"
+      },
+      "completed_at": "2026-10-02T01:24:26.882556+00:00",
+      "duration_seconds": 101.623469,
+      "metrics": {
+        "final_training_loss": 0.04609935166584144,
+        "best_validation_loss": 0.457371757932942,
+        "test_accuracy": 0.8666666666666667,
+        "test_macro_precision": 0.9027777777777778,
+        "test_macro_recall": 0.8888888888888888,
+        "test_macro_f1": 0.8595238095238096,
+        "test_records": 15
+      },
+      "checkpoint_path": "artifacts\\vietnamese_intent\\checkpoints\\best_model.pkl",
+      "evaluation_path": "artifacts\\vietnamese_intent\\evaluation.json",
+      "error": null
     }
   },
   "model_versions": {
@@ -50,6 +134,27 @@
       "checkpoint_path": "artifacts\\vietnamese_intent\\checkpoints\\best_model.pkl",
       "metrics": {
         "test_accuracy": 0.8666666666666667
+      },
+      "description": "Vietnamese intent classifier trained on project-authored data"
+    },
+    "vi-intent-run_40e9eb86d5974015a12e96699ec3d768": {
+      "model_version": "vi-intent-run_40e9eb86d5974015a12e96699ec3d768",
+      "run_id": "run_40e9eb86d5974015a12e96699ec3d768",
+      "created_at": "2026-10-02T01:00:48.510574+00:00",
+      "checkpoint_path": "artifacts\\vietnamese_intent\\checkpoints\\best_model.pkl",
+      "metrics": {
+        "test_accuracy": 0.8666666666666667
+      },
+      "description": "Vietnamese intent classifier trained on project-authored data"
+    },
+    "vi-intent-run_ac1b92375b144a9882914a61174332e4": {
+      "model_version": "vi-intent-run_ac1b92375b144a9882914a61174332e4",
+      "run_id": "run_ac1b92375b144a9882914a61174332e4",
+      "created_at": "2026-10-02T01:24:26.913555+00:00",
+      "checkpoint_path": "artifacts\\vietnamese_intent\\checkpoints\\best_model.pkl",
+      "metrics": {
+        "test_accuracy": 0.8666666666666667,
+        "test_macro_f1": 0.8595238095238096
       },
       "description": "Vietnamese intent classifier trained on project-authored data"
     }
@@ -65,6 +170,222 @@
         "accuracy": 0.8666666666666667,
         "correct": 13,
         "total": 15
+      }
+    },
+    "evaluation_c5ee542b40e44d55be4a955b9a257d4c": {
+      "evaluation_id": "evaluation_c5ee542b40e44d55be4a955b9a257d4c",
+      "model_version": "vi-intent-run_40e9eb86d5974015a12e96699ec3d768",
+      "run_id": "run_40e9eb86d5974015a12e96699ec3d768",
+      "created_at": "2026-10-02T01:00:48.528923+00:00",
+      "result": {
+        "task": "intent_classification",
+        "accuracy": 0.8666666666666667,
+        "correct": 13,
+        "total": 15
+      }
+    },
+    "evaluation_7dee3cee42934752abb296cc5b2af3fd": {
+      "evaluation_id": "evaluation_7dee3cee42934752abb296cc5b2af3fd",
+      "model_version": "vi-intent-run_ac1b92375b144a9882914a61174332e4",
+      "run_id": "run_ac1b92375b144a9882914a61174332e4",
+      "created_at": "2026-10-02T01:24:26.927826+00:00",
+      "result": {
+        "task": "intent_classification",
+        "dataset": {
+          "name": "vi-intent-test",
+          "version": "1.0.0",
+          "type": "instruction",
+          "records": 15,
+          "language": "vi"
+        },
+        "metrics": {
+          "accuracy": 0.8666666666666667,
+          "correct": 13,
+          "total": 15,
+          "macro_precision": 0.9027777777777778,
+          "macro_recall": 0.8888888888888888,
+          "macro_f1": 0.8595238095238096,
+          "per_class": {
+            "capability": {
+              "precision": 0.6666666666666666,
+              "recall": 1.0,
+              "f1_score": 0.8,
+              "support": 2
+            },
+            "goodbye": {
+              "precision": 0.75,
+              "recall": 1.0,
+              "f1_score": 0.8571428571428571,
+              "support": 3
+            },
+            "greeting": {
+              "precision": 1.0,
+              "recall": 0.3333333333333333,
+              "f1_score": 0.5,
+              "support": 3
+            },
+            "thanks": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1_score": 1.0,
+              "support": 3
+            },
+            "time": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1_score": 1.0,
+              "support": 2
+            },
+            "weather": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1_score": 1.0,
+              "support": 2
+            }
+          }
+        },
+        "confusion_matrix": {
+          "capability": {
+            "capability": 2,
+            "goodbye": 0,
+            "greeting": 0,
+            "thanks": 0,
+            "time": 0,
+            "weather": 0
+          },
+          "goodbye": {
+            "capability": 0,
+            "goodbye": 3,
+            "greeting": 0,
+            "thanks": 0,
+            "time": 0,
+            "weather": 0
+          },
+          "greeting": {
+            "capability": 1,
+            "goodbye": 1,
+            "greeting": 1,
+            "thanks": 0,
+            "time": 0,
+            "weather": 0
+          },
+          "thanks": {
+            "capability": 0,
+            "goodbye": 0,
+            "greeting": 0,
+            "thanks": 3,
+            "time": 0,
+            "weather": 0
+          },
+          "time": {
+            "capability": 0,
+            "goodbye": 0,
+            "greeting": 0,
+            "thanks": 0,
+            "time": 2,
+            "weather": 0
+          },
+          "weather": {
+            "capability": 0,
+            "goodbye": 0,
+            "greeting": 0,
+            "thanks": 0,
+            "time": 0,
+            "weather": 2
+          }
+        },
+        "predictions": [
+          {
+            "text": "Bạn khỏe không",
+            "expected": "greeting",
+            "predicted": "capability",
+            "correct": false
+          },
+          {
+            "text": "Ê trợ lý chào nhé",
+            "expected": "greeting",
+            "predicted": "greeting",
+            "correct": true
+          },
+          {
+            "text": "Ê",
+            "expected": "greeting",
+            "predicted": "goodbye",
+            "correct": false
+          },
+          {
+            "text": "Tạm biệt trợ lý",
+            "expected": "goodbye",
+            "predicted": "goodbye",
+            "correct": true
+          },
+          {
+            "text": "Nói chuyện sau nhé",
+            "expected": "goodbye",
+            "predicted": "goodbye",
+            "correct": true
+          },
+          {
+            "text": "Tôi đi đây",
+            "expected": "goodbye",
+            "predicted": "goodbye",
+            "correct": true
+          },
+          {
+            "text": "Cảm ơn vì đã giúp",
+            "expected": "thanks",
+            "predicted": "thanks",
+            "correct": true
+          },
+          {
+            "text": "Thật sự cảm ơn",
+            "expected": "thanks",
+            "predicted": "thanks",
+            "correct": true
+          },
+          {
+            "text": "Cảm ơn nhiều nha",
+            "expected": "thanks",
+            "predicted": "thanks",
+            "correct": true
+          },
+          {
+            "text": "Hôm nay trời lạnh không",
+            "expected": "weather",
+            "predicted": "weather",
+            "correct": true
+          },
+          {
+            "text": "Cho tôi xem dự báo thời tiết",
+            "expected": "weather",
+            "predicted": "weather",
+            "correct": true
+          },
+          {
+            "text": "Hôm nay thứ mấy vậy",
+            "expected": "time",
+            "predicted": "time",
+            "correct": true
+          },
+          {
+            "text": "Cho tôi biết hôm nay ngày mấy",
+            "expected": "time",
+            "predicted": "time",
+            "correct": true
+          },
+          {
+            "text": "Bạn có thể giúp tôi như thế nào",
+            "expected": "capability",
+            "predicted": "capability",
+            "correct": true
+          },
+          {
+            "text": "Bạn làm được gì vậy",
+            "expected": "capability",
+            "predicted": "capability",
+            "correct": true
+          }
+        ]
       }
     }
   }

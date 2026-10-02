@@ -1,3 +1,6 @@
+import json
+
+from training.registry import TrainingRegistry
 from examples.vietnamese_intent_training import (
     build_datasets,
     build_vocabulary,
@@ -77,3 +80,29 @@ def test_vietnamese_intent_training_end_to_end(tmp_path):
         metrics["support"]
         for metrics in result["per_class_metrics"].values()
     ) == result["test_total"]
+    
+    evaluation_path = tmp_path / "evaluation.json"
+    assert evaluation_path.exists()
+
+    with evaluation_path.open("r", encoding="utf-8") as file:
+        evaluation_artifact = json.load(file)
+
+    assert evaluation_artifact["run_id"] == result["run_id"]
+    assert evaluation_artifact["model_version"] == result["model_version"]
+    assert evaluation_artifact["evaluation_id"] == result["evaluation_id"]
+    assert evaluation_artifact["metrics"]["total"] == result["test_total"]
+    assert evaluation_artifact["confusion_matrix"] == result["confusion_matrix"]
+    assert evaluation_artifact["predictions"] == result["predictions"]
+
+    registry = TrainingRegistry(tmp_path / "registry.json")
+
+    registered_run = registry.get_run(result["run_id"])
+    registered_model = registry.get_model(result["model_version"])
+    registered_evaluation = registry.get_evaluation(result["evaluation_id"])
+
+    assert registered_run.status == "completed"
+    assert registered_run.evaluation_path == str(evaluation_path)
+    assert registered_model.run_id == result["run_id"]
+    assert registered_evaluation.run_id == result["run_id"]
+    assert registered_evaluation.model_version == result["model_version"]
+    assert registered_evaluation.result["metrics"]["total"] == result["test_total"]
