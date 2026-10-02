@@ -41,12 +41,19 @@ def test_encoder_produces_expected_tensor_shapes():
 
 
 def test_vietnamese_intent_training_end_to_end(tmp_path):
+    _, _, test_dataset = build_datasets()
+
     result = run_training(tmp_path)
 
     assert result["epochs_completed"] > 0
     assert result["final_training_loss"] < result["first_training_loss"]
-    assert result["test_total"] == 12
+
+    # So sánh với số mẫu thực tế trong test dataset,
+    # không hard-code số lượng mẫu.
+    assert result["test_total"] == len(test_dataset)
+
     assert 0.0 <= result["test_accuracy"] <= 1.0
+    assert result["test_correct"] <= result["test_total"]
     assert result["checkpoint_path"]
     assert (tmp_path / "metrics.json").exists()
     assert (tmp_path / "registry.json").exists()
