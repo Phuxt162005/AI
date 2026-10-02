@@ -362,6 +362,19 @@ def run_training(output_dir: str | Path = "artifacts/vietnamese_intent"):
         if history.checkpoint_path is None:
             raise RuntimeError("Training did not produce a best checkpoint.")
 
+        # Store inference metadata alongside the best trained model.
+        checkpoint_path = Path(history.checkpoint_path)
+        checkpoint_state = checkpoint_manager.load(checkpoint_path)
+
+        checkpoint_state["vocabulary"] = vocabulary
+        checkpoint_state["labels"] = LABELS
+        checkpoint_state["task"] = "vietnamese_intent_classification"
+
+        checkpoint_manager.save(
+            checkpoint_state,
+            filename=checkpoint_path.name,
+        )
+
         test_metrics = evaluate_accuracy(model, test_dataset, vocabulary)
         if history.epoch_metrics:
             first_loss = history.epoch_metrics[0]["training_loss"]

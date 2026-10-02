@@ -1,5 +1,5 @@
 {
-  "run_id": "run_ac1b92375b144a9882914a61174332e4",
+  "run_id": "run_ec3c74ce928a4f50ae06aeb09e5046a0",
   "task": "Vietnamese intent classification",
   "labels": [
     "capability",
@@ -204,7 +204,7 @@
       "correct": true
     }
   ],
-  "model_version": "vi-intent-run_ac1b92375b144a9882914a61174332e4",
-  "evaluation_id": "evaluation_7dee3cee42934752abb296cc5b2af3fd",
+  "model_version": "vi-intent-run_ec3c74ce928a4f50ae06aeb09e5046a0",
+  "evaluation_id": "evaluation_ec925a20f3244cd1963cabd92a6ea53f",
   "evaluation_path": "artifacts\\vietnamese_intent\\evaluation.json"
 }
