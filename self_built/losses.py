@@ -83,3 +83,59 @@ class BinaryCrossEntropyLoss(Loss):
             label = float(label)
             gradients.append((probability - label) / (probability * (1.0 - probability) * self._prediction.size))
         return Tensor(gradients, self._prediction.shape)
+    
+class SoftmaxCrossEntropyLoss(Loss):
+    """Softmax cross-entropy for multiclass one-hot targets."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._probabilities: Tensor | None = None
+
+    def forward(self, prediction: Tensor, target: Tensor) -> float:
+        if prediction.ndim != 2 or target.ndim != 2:
+            raise ValueError("Prediction and target must be 2-D tensors.")
+
+        if prediction.shape != target.shape:
+            raise ValueError(
+                f"Prediction shape {prediction.shape} does not match "
+                f"target shape {target.shape}."
+            )
+
+        batch_size, num_classes = prediction.shape
+        if batch_size == 0 or num_classes < 2:
+            raise ValueError("Cross-entropy requires a non-empty batch and 2+ classes.")
+
+        probabilities = []
+        total_loss = 0.0
+
+        for row in range(batch_size):
+            logits = [float(prediction[row, col]) for col in range(num_classes)]
+            max_logit = max(logits)
+            exponentials = [math.exp(value - max_logit) for value in logits]
+            denominator = sum(exponentials)
+            probs = [value / denominator for value in exponentials]
+            probabilities.extend(probs)
+
+            target_sum = 0.0
+            for col in range(num_classes):
+                label = float(target[row, col])
+                if label < 0.0:
+                    raise ValueError("Target values must be non-negative.")
+                target_sum += label
+
+                if label > 0.0:
+                    total_loss -= label * math.log(max(probs[col], 1e-15))
+
+            if abs(target_sum - 1.0) > 1e-6:
+                raise ValueError("Each target row must sum to 1.")
+
+        self._probabilities = Tensor(probabilities, prediction.shape)
+        self._target = Tensor(target)
+        return total_loss / batch_size
+
+    def backward(self) -> Tensor:
+        if self._probabilities is None or self._target is None:
+            raise RuntimeError("forward() must be called before backward().")
+
+        batch_size = self._probabilities.shape[0]
+        return (self._probabilities - self._target) / batch_size
