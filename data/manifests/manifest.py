@@ -22,17 +22,41 @@ class DatasetManifest:
     attributes: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        if not self.manifest_id.strip():
-            raise ValueError("manifest_id must not be empty")
+        text_fields = {
+            "manifest_id": self.manifest_id,
+            "name": self.name,
+            "version": self.version,
+        }
 
-        if not self.name.strip():
-            raise ValueError("name must not be empty")
+        for field_name, value in text_fields.items():
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{field_name} must be a non-empty string")
 
-        if not self.version.strip():
-            raise ValueError("version must not be empty")
+        if not isinstance(self.description, str):
+            raise TypeError("description must be a string")
+
+        if not isinstance(self.created_at, datetime):
+            raise TypeError("created_at must be a datetime")
+
+        if not isinstance(self.records, list):
+            raise TypeError("records must be a list of DataRecord instances")
+
+        if any(not isinstance(record, DataRecord) for record in self.records):
+            raise TypeError("every record must be a DataRecord instance")
+
+        if not isinstance(self.attributes, dict):
+            raise TypeError("attributes must be a dictionary")
+
+        record_ids = [record.record_id for record in self.records]
+
+        if len(record_ids) != len(set(record_ids)):
+            raise ValueError("manifest contains duplicate record IDs")
 
     def add_record(self, record: DataRecord) -> None:
         """Add a data record to the manifest."""
+
+        if not isinstance(record, DataRecord):
+            raise TypeError("record must be a DataRecord instance")
 
         if any(
             existing.record_id == record.record_id

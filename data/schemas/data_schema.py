@@ -50,17 +50,37 @@ class DataRecord:
     tags: list[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        if not self.record_id.strip():
-            raise ValueError("record_id must not be empty")
+        if not isinstance(self.record_id, str) or not self.record_id.strip():
+            raise ValueError("record_id must be a non-empty string")
+
+        if not isinstance(self.version, str) or not self.version.strip():
+            raise ValueError("version must be a non-empty string")
+
+        if not isinstance(self.tags, list):
+            raise TypeError("tags must be a list of strings")
+
+        if any(not isinstance(tag, str) or not tag.strip() for tag in self.tags):
+            raise ValueError("each tag must be a non-empty string")
+
+        for field_name in ("metadata_id", "source_id"):
+            value = getattr(self, field_name)
+
+            if value is not None and (
+                not isinstance(value, str) or not value.strip()
+            ):
+                raise ValueError(f"{field_name} must be a non-empty string or None")
 
         if not isinstance(self.data_type, DataType):
-            self.data_type = DataType(self.data_type)
+            try:
+                self.data_type = DataType(self.data_type)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"Unsupported data_type: {self.data_type!r}") from exc
 
         if self.split is not None and not isinstance(self.split, DataSplit):
-            self.split = DataSplit(self.split)
-
-        if not self.version.strip():
-            raise ValueError("version must not be empty")
+            try:
+                self.split = DataSplit(self.split)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"Unsupported data split: {self.split!r}") from exc
 
     def to_dict(self) -> dict[str, Any]:
         """Convert the record into a serializable dictionary."""
