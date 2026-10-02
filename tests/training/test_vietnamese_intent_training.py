@@ -57,3 +57,23 @@ def test_vietnamese_intent_training_end_to_end(tmp_path):
     assert result["checkpoint_path"]
     assert (tmp_path / "metrics.json").exists()
     assert (tmp_path / "registry.json").exists()
+    
+    assert "confusion_matrix" in result
+    assert "per_class_metrics" in result
+
+    assert set(result["per_class_metrics"]) == set(result["labels"])
+
+    assert 0.0 <= result["macro_precision"] <= 1.0
+    assert 0.0 <= result["macro_recall"] <= 1.0
+    assert 0.0 <= result["macro_f1"] <= 1.0
+
+    matrix_total = sum(
+        sum(row.values())
+        for row in result["confusion_matrix"].values()
+    )
+    assert matrix_total == result["test_total"]
+
+    assert sum(
+        metrics["support"]
+        for metrics in result["per_class_metrics"].values()
+    ) == result["test_total"]

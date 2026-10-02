@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "training_runs": {
+    "run_0412d1b3f24e4583b1b88b8cdf40a92a": {
+      "run_id": "run_0412d1b3f24e4583b1b88b8cdf40a92a",
+      "status": "completed",
+      "started_at": "2026-10-02T00:49:19.392348+00:00",
+      "configuration": {
+        "epochs": 120,
+        "learning_rate": 0.05,
+        "seed": 42,
+        "batch_size": 8,
+        "shuffle": true,
+        "drop_last": false,
+        "num_workers": 0,
+        "sequence_length": 128,
+        "gradient_accumulation_steps": 1,
+        "mixed_precision": false,
+        "resource_check_interval": 20,
+        "dataset_name": "vi-intent-train",
+        "dataset_version": "1.0.0",
+        "dataset_type": "instruction"
+      },
+      "dataset": {
+        "name": "vi-intent-train",
+        "version": "1.0.0",
+        "dataset_type": "instruction",
+        "train_records": 36,
+        "validation_records": 12,
+        "test_records": 15,
+        "source": "project_authored_small_dataset"
+      },
+      "completed_at": "2026-10-02T00:50:57.909201+00:00",
+      "duration_seconds": 98.516853,
+      "metrics": {
+        "final_training_loss": 0.04609935166584144,
+        "best_validation_loss": 0.457371757932942,
+        "test_accuracy": 0.8666666666666667
+      },
+      "checkpoint_path": "artifacts\\vietnamese_intent\\checkpoints\\best_model.pkl",
+      "evaluation_path": null,
+      "error": null
+    }
+  },
+  "model_versions": {
+    "vi-intent-run_0412d1b3f24e4583b1b88b8cdf40a92a": {
+      "model_version": "vi-intent-run_0412d1b3f24e4583b1b88b8cdf40a92a",
+      "run_id": "run_0412d1b3f24e4583b1b88b8cdf40a92a",
+      "created_at": "2026-10-02T00:50:57.937838+00:00",
+      "checkpoint_path": "artifacts\\vietnamese_intent\\checkpoints\\best_model.pkl",
+      "metrics": {
+        "test_accuracy": 0.8666666666666667
+      },
+      "description": "Vietnamese intent classifier trained on project-authored data"
+    }
+  },
+  "evaluation_results": {
+    "evaluation_72aa26fd845046238906178bd8303e5b": {
+      "evaluation_id": "evaluation_72aa26fd845046238906178bd8303e5b",
+      "model_version": "vi-intent-run_0412d1b3f24e4583b1b88b8cdf40a92a",
+      "run_id": "run_0412d1b3f24e4583b1b88b8cdf40a92a",
+      "created_at": "2026-10-02T00:50:57.951302+00:00",
+      "result": {
+        "task": "intent_classification",
+        "accuracy": 0.8666666666666667,
+        "correct": 13,
+        "total": 15
+      }
+    }
+  }
+}

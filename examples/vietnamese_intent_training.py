@@ -194,27 +194,101 @@ def predict_label(model: Model, text: str, vocabulary: dict[str, int]) -> str:
     return LABELS[max(range(len(row)), key=row.__getitem__)]
 
 
-def evaluate_accuracy(model: Model, dataset: TrainingDataset, vocabulary: dict[str, int]) -> dict[str, Any]:
+def evaluate_accuracy(
+    model: Model,
+    dataset: TrainingDataset,
+    vocabulary: dict[str, int],
+) -> dict[str, Any]:
     correct = 0
     predictions = []
+    confusion_matrix = {
+        actual: {predicted: 0 for predicted in LABELS}
+        for actual in LABELS
+    }
 
     for record in dataset.records:
         predicted = predict_label(model, record.input, vocabulary)
         expected = record.output
-        correct += int(predicted == expected)
+
+        if expected not in confusion_matrix:
+            raise ValueError(f"Unknown expected label: {expected}")
+
+        if predicted not in confusion_matrix[expected]:
+            raise ValueError(f"Unknown predicted label: {predicted}")
+
+        is_correct = predicted == expected
+        correct += int(is_correct)
+        confusion_matrix[expected][predicted] += 1
 
         predictions.append({
             "text": record.input,
             "expected": expected,
             "predicted": predicted,
-            "correct": predicted == expected,
+            "correct": is_correct,
         })
 
     total = len(dataset)
+    per_class_metrics = {}
+
+    for label in LABELS:
+        true_positive = confusion_matrix[label][label]
+
+        false_positive = sum(
+            confusion_matrix[actual][label]
+            for actual in LABELS
+            if actual != label
+        )
+        false_negative = sum(
+            confusion_matrix[label][predicted]
+            for predicted in LABELS
+            if predicted != label
+        )
+
+        support = sum(confusion_matrix[label].values())
+        precision = (
+            true_positive / (true_positive + false_positive)
+            if true_positive + false_positive
+            else 0.0
+        )
+        recall = (
+            true_positive / (true_positive + false_negative)
+            if true_positive + false_negative
+            else 0.0
+        )
+        f1_score = (
+            2 * precision * recall / (precision + recall)
+            if precision + recall
+            else 0.0
+        )
+        per_class_metrics[label] = {
+            "precision": precision,
+            "recall": recall,
+            "f1_score": f1_score,
+            "support": support,
+        }
+
+    macro_precision = sum(
+        metrics["precision"]
+        for metrics in per_class_metrics.values()
+    ) / len(LABELS)
+    macro_recall = sum(
+        metrics["recall"]
+        for metrics in per_class_metrics.values()
+    ) / len(LABELS)
+    macro_f1 = sum(
+        metrics["f1_score"]
+        for metrics in per_class_metrics.values()
+    ) / len(LABELS)
+
     return {
         "accuracy": correct / total if total else 0.0,
         "correct": correct,
         "total": total,
+        "confusion_matrix": confusion_matrix,
+        "per_class_metrics": per_class_metrics,
+        "macro_precision": macro_precision,
+        "macro_recall": macro_recall,
+        "macro_f1": macro_f1,
         "predictions": predictions,
     }
 
@@ -310,6 +384,11 @@ def run_training(output_dir: str | Path = "artifacts/vietnamese_intent"):
             "test_accuracy": test_metrics["accuracy"],
             "test_correct": test_metrics["correct"],
             "test_total": test_metrics["total"],
+            "confusion_matrix": test_metrics["confusion_matrix"],
+            "per_class_metrics": test_metrics["per_class_metrics"],
+            "macro_precision": test_metrics["macro_precision"],
+            "macro_recall": test_metrics["macro_recall"],
+            "macro_f1": test_metrics["macro_f1"],
             "checkpoint_path": history.checkpoint_path,
             "predictions": test_metrics["predictions"],
         }

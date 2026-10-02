@@ -10,7 +10,7 @@ class ResourceLimits:
     max_training_ram_gb: float = 5.5
 
     # Total RAM used by the whole system.
-    max_system_ram_gb: float = 12.5
+    max_system_ram_gb: float = 13.0
 
     # Minimum RAM that should remain available.
     min_available_ram_gb: float = 2.0
@@ -22,8 +22,8 @@ class ResourceLimits:
     min_free_disk_gb: float = 10.0
 
     # Number of CPU threads allowed for PyTorch CPU operations.
-    max_cpu_threads: int = 4
-
+    max_cpu_threads: int = 6
+    
     def validate(self) -> None:
         if self.max_training_ram_gb <= 0:
             raise ValueError("max_training_ram_gb must be greater than 0")
